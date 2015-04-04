@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+# Lancher for Pupistry CLI
+
+require 'rubygems'
+require 'pupistry'
+
+Pupistry::CLI.start(ARGV)
+
