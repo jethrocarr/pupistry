@@ -22,15 +22,6 @@ module Pupistry
 
       $config = YAML::load(File.open(file))
 
-      # If the AWS configuration parameters are unset, suck them in from environmentals
-      unless defined? $config["AWS"]["access_key_id"]
-         if defined? ENV['AWS_ACCESS_KEY_ID']
-           $logger.debug "Using AWS credentials from environmentals"
-           $config["AWS"]["access_key_id"]       = ENV['AWS_ACCESS_KEY_ID']
-           $config["AWS"]["secret_access_key"]   = ENV['AWS_SECRET_ACCESS_KEY']
-         end
-      end
-
       # Make sure cache directory exists, create it otherwise
       $config["general"]["app_cache"] = File.expand_path($config["general"]["app_cache"]).chomp('/')
 
@@ -51,7 +42,6 @@ module Pupistry
         $logger.fatal "Unexpected exception when creating testfile in cache directory at \"#{$config["general"]["app_cache"]}\", is the directory writable?"
         raise e
       end
-
 
     end
 

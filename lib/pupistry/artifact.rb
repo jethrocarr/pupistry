@@ -1,5 +1,6 @@
 # vim:shiftwidth=2:tabstop=2:softtabstop=2:expandtab:smartindent
 require 'rubygems'
+require 'yaml'
 require 'time'
 require 'digest'
 require 'fileutils'
@@ -14,6 +15,11 @@ module Pupistry
 
     def fetch_r10k
       $logger.info "Using r10k utility to fetch the latest Puppet code"
+
+      unless defined? $config["build"]["puppetcode"]
+        $logger.fatal "You must configure the build:puppetcode config option in settings.yaml"
+        raise "Invalid Configuration"
+      end
 
       # https://github.com/puppetlabs/r10k
       #
@@ -64,7 +70,8 @@ module Pupistry
     end
 
     def fetch_artifact
-      # Download the latest artifact
+
+      end
     end
 
 
@@ -74,14 +81,74 @@ module Pupistry
       # 2. Upload the manifest and archive files to S3.
       # 3. Upload a copy as the "latest" manifest file which will be hit by clients.
 
+
+      # Determine which version we are uploading. Either one specifically
+      # selected, otherwise find the latest one to push
+
       if defined? @checksum
         $logger.info "Uploading artifact version #{@checksum}."
       else
-        # Read the 
+        # Read the symlink information to get the latest version
+        if File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.latest.yaml")
+          manifest    = YAML::load(File.open($config["general"]["app_cache"] + "/artifacts/manifest.latest.yaml"))
+          @checksum   = manifest['version']
+        else
+          $logger.error "No artifact exists to be uploaded at this time. Have you run pupistry build first?"
+          exit 0
+        end
 
         $logger.info "Uploading artifact version latest (#{@checksum})"
       end
 
+
+      # Make sure the files actually exist...
+      unless File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml")
+        $logger.error "The files expected for #{@checksum} do not appear to exist or are not readable"
+        raise "Fatal unexpected error"
+      end
+
+      unless File.exists?($config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz")
+        $logger.error "The files expected for #{@checksum} do not appear to exist or are not readable"
+        raise "Fatal unexpected error"
+      end
+
+
+      # GPG sign the files
+      if $config["general"]["gpg_disable"] == true
+        $logger.warn "You have GPG signing *disabled*, whilst not critical it does weaken your security."
+        $logger.warn "Skipping signing step..."
+      else
+        $logger.info "GPG signing the artifact with configured key"
+
+        # TODO: should probably write this bit!
+      end
+
+
+      # Upload the artifact & manifests to S3. We also make an additional copy 
+      # as the "latest" file which will be downloaded by all the agents checking
+      # for new updates.
+
+      s3 = Pupistry::Storage_AWS.new 'build'
+      s3.upload $config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz", "artifact.#{@checksum}.tar.gz"
+      s3.upload $config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml", "manifest.#{@checksum}.yaml"
+      s3.upload $config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml", "manifest.latest.yaml"
+
+
+      # Test a read of the manifest, we do this to make sure the S3 ACLs setup
+      # allow downloading of the uploaded files - helps avoid user headaches if
+      # they misconfigure and then blindly trust their bootstrap config.
+      #
+      # Only worth doing this step if they've explicitly set their AWS IAM credentials
+      # for the agent, which should be everyone except for IAM role users.
+
+      if $config["agent"]["aws_access_id"]
+        fetch_artifact
+      else
+        $logger.warn "The agent's AWS credentials are unset on this machine, unable to do download test to check permissions for you."
+        $logger.warn "Assuming you know what you're doing, please set if unsure."
+      end
+
+      $logger.info "Upload of artifact version #{@checksum} completed and is now latest"
     end
     
 

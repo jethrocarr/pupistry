@@ -42,8 +42,11 @@ configure the following:
 * An IAM account with access to read that bucket (for your servers)
 
 If you're not already using IAM with your AWS account you want to be - your
-servers should only ever have read access to the bucket and only your engineer
-or workstation should be able to make changes to it.
+servers should only ever have read access to the bucket and only your build
+workstation should be permitted to write new artifacts.
+
+Note that if you're running EC2 instances and using IAM roles, you can avoid
+needing to create explicit IAM credentials.
 
 
 ## Helper Puppet Module
@@ -222,16 +225,6 @@ Currently Pupistry only supports generation of bootstrap for CentOS 7 & Ubuntu
 Note that this isn't a showstopper, you can use pupistry with pretty much any
 nix platform, you'll just not have the handy advantage of automatically
 generated bootstrap for your servers - but you can certainly take what has been
-
-
-## AWS IAM Usage
-
-Currently we expect a specific IAM account to be configured for read & writing
-the artifacts. However if you are on AWS itself, there is a feature called roles
-that allows permissions to be granted to a particular machine automatically.
-
-Longer term we expect to add native support for this roles functionality, but for
-now you will need to fetch the IAM details and pass them to Pupistry yourself.
 
 
 ## Continious Deployment

@@ -19,8 +19,8 @@ class CLI < Thor
   class_option :verbose, :type => :boolean
   class_option :config, :type => :string
 
-  desc "generate", "Generate a new archive file"
-  def generate
+  desc "build", "Build a new archive file"
+  def build
 
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
@@ -56,7 +56,6 @@ class CLI < Thor
 
   desc "diff", "Show what has changed between now and the previous artifact"
   def diff
-    puts "Running diff action"
 
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
@@ -73,7 +72,7 @@ class CLI < Thor
 
     # Fetch the latest artifact
     artifact = Pupistry::Artifact.new
-    artifact.fetch_current
+    artifact.fetch_artifact
 
 
     puts "Tip: Run pupistry push to GPG sign & upload if happy to go live"
@@ -82,7 +81,23 @@ class CLI < Thor
 
   desc "push", "Sign & Upload a new artifact version"
   def push
-    puts "Running push action"
+
+    # Thor seems to force class options to be defined repeatedly? :-/
+    if options[:verbose]
+      $logger.level = Logger::DEBUG
+    else
+      $logger.level = Logger::INFO
+    end
+
+    if options[:config]
+      Pupistry::Config.load(options[:config])
+    else
+      Pupistry::Config.find_and_load
+    end
+
+    # Push the artifact to S3
+    artifact = Pupistry::Artifact.new
+    artifact.push_artifact
   end
 
 
