@@ -71,7 +71,8 @@ class CLI < Thor
     end
 
     # Fetch the latest artifact
-    artifact = Pupistry::Artifact.new
+    artifact          = Pupistry::Artifact.new
+    artifact.checksum = artifact.fetch_latest
     artifact.fetch_artifact
 
 

@@ -75,14 +75,56 @@ module Pupistry
       rescue AWS::S3::Errors::SignatureDoesNotMatch => e
         $logger.error "IAM signature error when accessing #{$config["general"]["s3_bucket"]}, probably invalid IAM credentials"
         raise e
+      
+      rescue Exception => e
+        raise e
       end
     end
 
 
 
+   def download src, dest = 'stream'
+      $logger.debug "Downloading file s3://#{$config["general"]["s3_bucket"]}/#{$config["general"]["s3_prefix"]}#{src} to #{dest}"
 
-   # def download src dest
-   # end
+      begin
+        # Generate the object name/key based on the relative file name and path.
+        s3_obj_name = "#{$config["general"]["s3_prefix"]}#{src}"
+        s3_obj      = @s3.buckets[$config["general"]["s3_bucket"]].objects[s3_obj_name]
+
+        # Download the file
+        if dest == 'stream'
+          # Return the contents rather than writing to disk. We assume stream mode
+          # if the dest filename was unspecified
+          return s3_obj.read
+        else
+          # Download to an ondisk file
+          File.open(dest, 'wb') do |file|
+            s3_obj.read do |chunk|
+              file.write(chunk)
+            end
+          end
+        end
+
+      rescue AWS::S3::Errors::NoSuchBucket => e
+        $logger.fatal "S3 bucket #{$config["general"]["s3_bucket"]} does not exist"
+        exit 0
+
+      rescue AWS::S3::Errors::AccessDenied => e
+        $logger.fatal "Access to S3 bucket #{$config["general"]["s3_bucket"]} denied"
+        exit 0
+
+      rescue AWS::S3::Errors::PermanentRedirect => e
+        $logger.error "The wrong endpoint has been specified (or autodetected) for #{$config["general"]["s3_bucket"]}."
+        raise e
+
+      rescue AWS::S3::Errors::SignatureDoesNotMatch => e
+        $logger.error "IAM signature error when accessing #{$config["general"]["s3_bucket"]}, probably invalid IAM credentials"
+        raise e
+
+      rescue Exception => e
+        raise e
+      end
+    end
 
   end
 end

@@ -69,10 +69,52 @@ module Pupistry
 
     end
 
+    def fetch_latest
+      # Fetch the latest YAML file and check the version metadata without writing
+      # it to disk. Returns the version. Useful for quickly checking for updates :-)
+
+      $logger.debug "Checking latest artifact version..."
+
+      s3        = Pupistry::Storage_AWS.new 'agent'
+      manifest  = YAML::load(s3.download "manifest.latest.yaml")
+
+      if defined? manifest['version']
+        return manifest['version']
+      else
+        return false
+      end
+
+    end
+
+
     def fetch_artifact
 
+      # Figure out which version to fetch (if not explicitly defined)
+      if defined? @checksum
+        $logger.info "Downloading artifact version #{@checksum}"
+      else
+        @checksum = fetch_latest
+
+        unless @checksum.empty?
+          $logger.info "Downloading latest artifact (#{@checksum})"
+        else
+          $logger.error "There is not current artifact that can be fetched"
+          raise "Impossible Request"
+        end
+
       end
+
+      # Download files if they don't already exist
+      if File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml") and File.exists?($config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz")
+        $logger.info "This artifact is already present, no download required."
+      else
+        s3 = Pupistry::Storage_AWS.new 'agent'
+        s3.download "manifest.#{@checksum}.yaml", $config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml"
+        s3.download "artifact.#{@checksum}.tar.gz", $config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz"
+      end
+
     end
+
 
 
     def push_artifact
@@ -141,12 +183,12 @@ module Pupistry
       # Only worth doing this step if they've explicitly set their AWS IAM credentials
       # for the agent, which should be everyone except for IAM role users.
 
-      if $config["agent"]["aws_access_id"]
+#      if $config["agent"]["aws_access_id"]
         fetch_artifact
-      else
-        $logger.warn "The agent's AWS credentials are unset on this machine, unable to do download test to check permissions for you."
-        $logger.warn "Assuming you know what you're doing, please set if unsure."
-      end
+#      else
+#        $logger.warn "The agent's AWS credentials are unset on this machine, unable to do download test to check permissions for you."
+#        $logger.warn "Assuming you know what you're doing, please set if unsure."
+#      end
 
       $logger.info "Upload of artifact version #{@checksum} completed and is now latest"
     end
