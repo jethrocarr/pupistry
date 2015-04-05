@@ -46,6 +46,21 @@ servers should only ever have read access to the bucket and only your engineer
 or workstation should be able to make changes to it.
 
 
+## Helper Puppet Module
+
+Whilst you can use Pupistry to roll out any particular design of Puppet
+manifests, you will save yourself a lot of pain by also including the Pupistry
+companion Puppet module in your manifests.
+
+The companion Puppet module will configure Pupistry for you, including setting
+up the system service and configuring Puppet and Hiera correctly for masterless
+operation.
+
+You can fetch the module from:
+https://github.com/jethrocarr/pupistry-puppet
+
+
+
 ## Generating new artifacts
 
 Generate a new artifact:
@@ -87,6 +102,9 @@ Apply the current Puppet manifests:
 
 Specify an alternative environment:
     pupistry apply --environment staging
+
+Run pupistry as a system daemon:
+    pupistry apply --daemon
 
 
 # Tutorials
@@ -182,6 +200,9 @@ let you down. :-)
 Whilst r10k deserves a lot of credit for being speedy, it's still no match for
 a single HTTP GET request. Pupistry makes checking for new manifests very very
 fast and the compressed archive downloads very quickly.
+
+A very clean and simple set of Puppet manifests can still take a good 20+ secs
+to check for updates with r10k, vs 1-2 secs with Pupistry.
 
 
 

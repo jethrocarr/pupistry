@@ -1,3 +1,4 @@
 /vendor/cache
 *.gem
 *.swp
+settings.yaml

@@ -2,7 +2,120 @@
 # Lancher for Pupistry CLI
 
 require 'rubygems'
+require 'thor'
+require 'logger'
 require 'pupistry'
 
-Pupistry::CLI.start(ARGV)
+# Ensure all output is real time - this is a long running process with
+# continual output, we want it to sync ASAP
+STDOUT.sync = true
 
+# Logging - STDOUT only
+$logger = Logger.new(STDOUT)
+
+
+# Thor is a toolkit for producing command line applications, see http://whatisthor.com/
+class CLI < Thor
+  class_option :verbose, :type => :boolean
+  class_option :config, :type => :string
+
+  desc "generate", "Generate a new archive file"
+  def generate
+
+    # Thor seems to force class options to be defined repeatedly? :-/
+    if options[:verbose]
+      $logger.level = Logger::DEBUG
+    else
+      $logger.level = Logger::INFO
+    end
+
+    if options[:config]
+      Pupistry::Config.load(options[:config])
+    else
+      Pupistry::Config.find_and_load
+    end
+
+
+    begin
+      # Fetch the latest data with r10k
+      artifact = Pupistry::Artifact.new
+
+      artifact.fetch_r10k
+      artifact.build_artifact
+
+      puts "Tip: Run pupistry diff to see what changed since the last artifact version"
+
+    rescue Exception => e
+      $logger.fatal "An unexpected error occured when trying to generate the new artifact file"
+      raise e
+    end
+
+
+  end
+
+
+  desc "diff", "Show what has changed between now and the previous artifact"
+  def diff
+    puts "Running diff action"
+
+    # Thor seems to force class options to be defined repeatedly? :-/
+    if options[:verbose]
+      $logger.level = Logger::DEBUG
+    else
+      $logger.level = Logger::INFO
+    end
+
+    if options[:config]
+      Pupistry::Config.load(options[:config])
+    else
+      Pupistry::Config.find_and_load
+    end
+
+    # Fetch the latest artifact
+    artifact = Pupistry::Artifact.new
+    artifact.fetch_current
+
+
+    puts "Tip: Run pupistry push to GPG sign & upload if happy to go live"
+  end
+
+
+  desc "push", "Sign & Upload a new artifact version"
+  def push
+    puts "Running push action"
+  end
+
+
+  desc "bootstrap", "Generate a user-data bootstrap script for a node"
+  method_option :template, :type => :string
+  def bootstrap
+
+    # Thor seems to force class options to be defined repeatedly? :-/
+    if options[:verbose]
+      $logger.level = Logger::DEBUG
+    else
+      $logger.level = Logger::INFO
+    end
+
+    if options[:config]
+      Pupistry::Config.load(options[:config])
+    else
+      Pupistry::Config.find_and_load
+    end
+
+
+    if options[:template]
+      $logger.info "Generating bootstrap template #{options[:template]}"
+    else
+      puts "Listing all avaible templates"
+      Pupistry::Bootstrap.templates_list
+
+      
+    end
+      
+  end
+end
+
+CLI.start(ARGV)
+
+# vim:shiftwidth=2:tabstop=2:softtabstop=2:expandtab:smartindent
