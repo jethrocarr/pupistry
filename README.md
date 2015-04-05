@@ -31,7 +31,8 @@ a number of issues with it.
 2. Your system build success is dependent on all the git repos you've used, including any third parties that could vanish. A single missing or broken repo could prevent autoscaling or new machine builds at a critical time. Pupistry's use of artifact files prevents surprises - if you can hit S3, you're sorted.
 3. It is easy for malicious code in the third party repos to slip in without noticing. Even if the author themselves is honest, not all repos have proper security like two-factor. Pupistry prevents surprise updates of modules and also has an easy diff feature to see what changed since you last generated an artifact.
 4. Puppet masterless tends to be implemented in many different ways using everyone's own hacky scripts. Pupistry's goal is to create a singular standard/approach to masterless, in the same way that r10k created a standard approach to git-based Puppet workflows. And this makes things easy - install Pupistry, add the companion Puppet module and run the bootstrap script. Easy!
-5. Performance - Go from 30+ seconds r10k update checks to 2 second Pupistry update checks. And when there is a change, it's a fast efficent compressed file download from S3 rather than pulling numerious git repos.
+5. No dodgy cronjobs running r10k and Puppet in weird ways. A simple clean agent with daemon or run-once functionality.
+6. Performance - Go from 30+ seconds r10k update checks to 2 second Pupistry update checks. And when there is a change, it's a fast efficent compressed file download from S3 rather than pulling numerious git repos.
 
 
 
@@ -89,7 +90,8 @@ Specify an alternative environment:
     pupistry apply --environment staging
 
 
-Run pupistry as a system daemon:
+Run pupistry as a system daemon. When you use the companion Puppet module, a
+system init file gets installed that sets this daemon up for you automatically.
 
     pupistry apply --daemon
 
@@ -178,26 +180,29 @@ basics of setting up your r10k environment.
 
 
 
-# Caveats & Future Feature Plans
+# Caveats & Future Plans
 
 ## Use r10k
 
 Currently only an r10k workflow is supported. Pull requests for others (eg
-Librarian Puppet) are welcome, but it's not a priority for this author.
+Librarian Puppet) are welcome, but it's not a priority for this author as r10k
+is working nicely.
 
 
 ## Bootstrap Functionality
 
 Currently Pupistry only supports generation of bootstrap for CentOS 7 & Ubuntu
-14.04. Other distributions will be added over time, and patches are welcome.
+14.04. Other distributions will be added, but it may take time to get to your
+particular favourite distribution.
 
-Note that this isn't a showstopper, you can use pupistry with pretty much any
-nix platform, you'll just not have the handy advantage of automatically
-generated bootstrap for your servers - but you can certainly take what has been
-generated for the existing OSes and customise to suit your particular needs.
+Note that it isn't a show stopper if support for your platform of choice
+doesn't yet exist -  you can use pupistry with pretty much any nix platform,
+you'll just not have the handy advantage of automatically generated bootstrap
+for your servers.
 
-Pull requests are VERY welcome, I'll add pretty much any OS if you write a
-decent bootstrap template for it.
+If you do customise it for a different platform, pull requests are VERY
+welcome, I'll add pretty much any OS if you write a decent bootstrap template
+for it.
 
 
 ## Continious Deployment
@@ -240,6 +245,13 @@ PuppetDB for masterless machines are welcome, although masterless users tend
 to want to avoid dependencies on a central point.
 
 
+## Windows
+
+No idea whether this works under Windows, or what would be required to make it
+do so. Again, pull requests always welcome but it's not a priority for the
+author.
+
+
 
 # Developing
 
@@ -258,9 +270,11 @@ Add --verbose for additional debugging information.
 
 Pull requests are very welcome. Pupistry is a very young app and there is
 plenty of work that can be done to improve it's code quality, enhance existing
-features and add handy new features.
+features and add handy new features. Constructive feedback/requests via the
+issue tracker is fine, but pull requests speak louder than words. :-)
 
-If you find a bug or need support, please use the issue tracker.
+If you find a bug or need support, please use the issue tracker rather than
+personal emails to the author.
 
 
 # Author
@@ -268,4 +282,5 @@ If you find a bug or need support, please use the issue tracker.
 Pupistry is developed by Jethro Carr. Blog posts about Pupistry and new
 features can be found at http://www.jethrocarr.com/tag/pupistry
 
+Beer welcome.
 
