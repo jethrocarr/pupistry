@@ -200,6 +200,7 @@ needing to create explicit IAM credentials for the agents/servers.
 
 The following is the expected minmum structure of the Puppetcode repository to
 enable it to work with Pupistry:
+
     /Puppetfile
     /hiera.yaml
     /manifests/site.pp
@@ -208,6 +209,7 @@ Puppetfile is standard r10k and site.pp is standard Puppet. The Hiera config
 is generally normal, but you do need to define a datadir to tell Puppet to look
 where the puppetcode gets unpacked to. Generally the following sample Hiera
 will do the trick:
+
     ---
     :backends: yaml
     :yaml:
@@ -218,8 +220,9 @@ will do the trick:
      - common
 
 Then in Pupistry, the following configuration should be used for the agent (or
-subsitute /etc/puppet/ for wherever your platform has %{::settings::confdir}
+subsitute `/etc/puppet/` for wherever your platform has `%{::settings::confdir}`
 set to).
+
       agent:
         puppetcode: /etc/puppet/environments
 
