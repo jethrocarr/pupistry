@@ -1,4 +1,3 @@
-# vim:shiftwidth=2:tabstop=2:softtabstop=2:expandtab:smartindent
 require 'rubygems'
 require 'fileutils'
 require 'tempfile'
@@ -78,3 +77,4 @@ module Pupistry
 
   end
 end
+# vim:shiftwidth=2:tabstop=2:softtabstop=2:expandtab:smartindent

@@ -1,4 +1,3 @@
-# vim:shiftwidth=2:tabstop=2:softtabstop=2:expandtab:smartindent
 require 'rubygems'
 require 'yaml'
 require 'aws-sdk-v1'
@@ -132,3 +131,4 @@ module Pupistry
 
   end
 end
+# vim:shiftwidth=2:tabstop=2:softtabstop=2:expandtab:smartindent
