@@ -19,6 +19,87 @@ class CLI < Thor
   class_option :verbose, :type => :boolean
   class_option :config, :type => :string
 
+
+  ## Agent Commands
+  
+  desc "apply", "Apply the latest Puppet artifact"
+  method_option :noop, :type => :boolean
+  method_option :daemon, :type => :boolean
+  method_option :environment, :type => :string
+  def apply
+
+    # Thor seems to force class options to be defined repeatedly? :-/
+    if options[:verbose]
+      $logger.level = Logger::DEBUG
+    else
+      $logger.level = Logger::INFO
+    end
+
+    if options[:config]
+      Pupistry::Config.load(options[:config])
+    else
+      Pupistry::Config.find_and_load
+    end
+
+    # Muppet Check
+    if options[:noop] and options[:daemon]
+      $logger.warn "A daemon running in noop will do nothing except log what changes it could apply"
+    end
+
+    # Muppet dev check
+    if options[:daemon]
+      $logger.fatal "Daemon mode not implemented yet"
+      exit 0
+    end
+
+    # Install the artifact
+    # TODO: Check if we've already installed it or not... :-)
+    $logger.info "Pulling latest artifact...."
+
+    artifact = Pupistry::Artifact.new
+    artifact.checksum = artifact.fetch_latest
+    artifact.fetch_artifact
+    artifact.unpack
+    unless artifact.install
+      $logger.fatal "An unexpected error happened when installing the latest artifact, cancelling Puppet run"
+      exit 0
+    end
+
+    # Remove temporary unpacked files
+    artifact.clean_unpack
+
+
+    # Execute Puppet. At this point
+    puppet_cmd = "puppet apply"
+
+    if options[:noop]
+      puppet_cmd += " --noop"
+    end
+
+    if options[:environment]
+      environment = options[:environment]
+    else
+      environment = 'master'
+    end
+
+    puppet_cmd += " --environment #{environment}"
+    puppet_cmd += " --modulepath #{$config["agent"]["puppetcode"]}/#{environment}/modules/"
+    puppet_cmd += " --hiera_config #{$config["agent"]["puppetcode"]}/#{environment}/hiera.yaml"
+    puppet_cmd += " #{$config["agent"]["puppetcode"]}/#{environment}/manifests/site.pp"
+
+    $logger.info "Executing Puppet..."
+    $logger.debug "With: #{puppet_cmd}"
+
+    unless system puppet_cmd
+      $logger.fatal "An unexpected issue occured when running puppet"
+    end
+
+  end
+
+
+
+  ## Workstation Commands
+
   desc "build", "Build a new archive file"
   def build
 
@@ -50,7 +131,6 @@ class CLI < Thor
       $logger.fatal "An unexpected error occured when trying to generate the new artifact file"
       raise e
     end
-
 
   end
 

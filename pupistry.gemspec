@@ -1,12 +1,12 @@
 Gem::Specification.new do |s|
   s.name        = 'pupistry'
-  s.version     = '0.0.1'
+  s.version     = '0.0.2'
   s.date        = '2015-04-04'
   s.summary     = "A workflow tool for Puppet Masterless Deployments"
   s.description = "Provides security, reliability and consistency to Puppet masterless environments"
   s.authors     = ["Jethro Carr"]
   s.email       = 'jethro.carr@jethrocarr.com'
-  s.files       = Dir['bin/*'] + Dir['lib/*'] + ["README.md"]
+  s.files       = Dir['bin/*'] + Dir['lib/*'] + Dir['lib/pupistry/*'] + ["README.md"] + ["settings.example.yaml"]
   s.executables = ["pupistry"]
   s.homepage    = 'https://github.com/jethrocarr/pupistry'
   s.license     = 'Apache'

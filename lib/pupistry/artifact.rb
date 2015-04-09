@@ -128,6 +128,11 @@ module Pupistry
 
       end
 
+      # Make sure the download dir/cache exists
+      unless Dir.exists?($config["general"]["app_cache"] + "/artifacts/")
+        FileUtils.mkdir_p $config["general"]["app_cache"] + "/artifacts/"
+      end
+
       # Download files if they don't already exist
       if File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml") and File.exists?($config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz")
         $logger.debug "This artifact is already present, no download required."
@@ -337,7 +342,6 @@ module Pupistry
       # so let's make sure it's gone
       clean_unpack
 
-
       # Unpack the archive file
       FileUtils.mkdir_p($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}")
       Dir.chdir($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}") do
@@ -347,6 +351,74 @@ module Pupistry
           raise "An unexpected error occured when executing tar"
         else
           $logger.debug "Successfully unpacked artifact #{@checksum}"
+        end
+      end
+
+    end
+
+
+    def install
+      # Copy the unpacked artifact into the agent's configured location. Generally all the
+      # heavy lifting is done by fetch_latest and unpack methods.
+
+      # An application version must be specified
+      unless defined? @checksum
+        raise "Application bug, trying to install no artifact"
+      end
+
+      # Make sure the artifact has been unpacked
+      unless Dir.exists?($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}")
+        $logger.error "The unpacked directory expected for #{@checksum} does not appear to exist or is not readable"
+        raise "Fatal unexpected error"
+      end
+
+      # Purge any currently installed files in the directory. See clean_install
+      # TODO notes for how this could be improved.
+      unless clean_install
+        $logger.error "Installation not proceeduing due to issues cleaning/prepping destination dir"
+      end
+
+      # Make sure the destination directory exists
+      unless Dir.exists?($config["agent"]["puppetcode"])
+        $logger.error "The destination path of #{$config["agent"]["puppetcode"]} does not appear to exist or is not readable"
+        raise "Fatal unexpected error"
+      end
+    
+      # Clone unpacked contents to the installation directory
+      begin
+        FileUtils.cp_r $config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}/puppetcode/.", $config["agent"]["puppetcode"]
+        return true
+      rescue
+        $logger.fatal "An unexpected error occured when copying the unpacked artifact to #{$config["agent"]["puppetcode"]}"
+        raise e
+      end
+
+    end
+
+
+    def clean_install
+      # Cleanup the destination installation directory before we unpack the artifact
+      # into it, otherwise long term we will end up with old deprecated files hanging
+      # around.
+      #
+      # TODO: Do this smarter, we should track what files we drop in, and then remove
+      # any that weren't touched. Need to avoid rsync and stick with native to make
+      # support easier for weird/minimilistic distributions.
+      
+      if defined? $config["agent"]["puppetcode"]
+        if $config["agent"]["puppetcode"].empty?
+          $logger.error "You must configure a location for the agent's Puppet code to be deployed to"
+          return false
+        else
+          $logger.debug "Cleaning up #{$config["agent"]["puppetcode"]} directory"
+
+          if Dir.exists?($config["agent"]["puppetcode"])
+            FileUtils.rm_r Dir.glob($config["agent"]["puppetcode"] + "/*"), :secure => true
+          else
+            FileUtils.mkdir_p $config["agent"]["puppetcode"]
+          end
+
+          return true
         end
       end
 
@@ -364,9 +436,13 @@ module Pupistry
       if Dir.exists?($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}/")
         $logger.debug "Cleaning up #{$config["general"]["app_cache"]}/artifacts/unpacked.#{@checksum}..."
         FileUtils.rm_r $config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}", :secure => true
+        return true
       else
         $logger.debug "Nothing to cleanup (selected artifact is not currently unpacked)"
+        return true
       end
+
+      return false
 
     end
 

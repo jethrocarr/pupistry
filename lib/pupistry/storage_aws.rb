@@ -22,7 +22,7 @@ module Pupistry
 
       # Define AWS configuration
       if defined? $config[mode]["access_key_id"]
-        if $config[mode]["access_key_id"] == ''
+        unless $config[mode]["access_key_id"] == ''
           $logger.debug "Loading AWS credentials from configuration file"
 
           AWS.config(
