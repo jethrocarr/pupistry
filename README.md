@@ -1,3 +1,8 @@
+# WORK IN PROGRESS
+
+This project is currently in progress and not all of this documentation reflects
+where it is really at. Use this at your own peril/madness.
+
 # pupistry
 
 Pupistry (puppet + artistry) is a solution for implementing reliable and secure
