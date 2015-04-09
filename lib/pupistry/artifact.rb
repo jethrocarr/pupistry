@@ -70,20 +70,45 @@ module Pupistry
     end
 
     def fetch_latest
-      # Fetch the latest YAML file and check the version metadata without writing
+      # Fetch the latest S3 YAML file and check the version metadata without writing
       # it to disk. Returns the version. Useful for quickly checking for updates :-)
 
       $logger.debug "Checking latest artifact version..."
 
       s3        = Pupistry::Storage_AWS.new 'agent'
-      manifest  = YAML::load(s3.download "manifest.latest.yaml")
+      contents  = s3.download 'manifest.latest.yaml'
 
-      if defined? manifest['version']
-        return manifest['version']
+      if contents
+        manifest = YAML::load(contents)
+
+        if defined? manifest['version']
+          return manifest['version']
+        else
+          return false
+        end
+
       else
+        # download did not work
         return false
       end
 
+
+    end
+
+
+    def fetch_current
+      # Fetch the latest on-disk YAML file and check the version metadata, used
+      # to determine the latest artifact that has not yet been pushed to S3.
+      # Returns the version.
+
+      # Read the symlink information to get the latest version
+      if File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.latest.yaml")
+          manifest    = YAML::load(File.open($config["general"]["app_cache"] + "/artifacts/manifest.latest.yaml"))
+          @checksum   = manifest['version']
+        else
+          $logger.error "No artifact has been built yet. You need to run pupistry build first?"
+          return 0
+        end
     end
 
 
@@ -91,22 +116,22 @@ module Pupistry
 
       # Figure out which version to fetch (if not explicitly defined)
       if defined? @checksum
-        $logger.info "Downloading artifact version #{@checksum}"
+        $logger.debug "Downloading artifact version #{@checksum}"
       else
         @checksum = fetch_latest
 
-        unless @checksum.empty?
-          $logger.info "Downloading latest artifact (#{@checksum})"
+        if defined? @checksum
+          $logger.debug "Downloading latest artifact (#{@checksum})"
         else
           $logger.error "There is not current artifact that can be fetched"
-          raise "Impossible Request"
+          return false
         end
 
       end
 
       # Download files if they don't already exist
       if File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml") and File.exists?($config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz")
-        $logger.info "This artifact is already present, no download required."
+        $logger.debug "This artifact is already present, no download required."
       else
         s3 = Pupistry::Storage_AWS.new 'agent'
         s3.download "manifest.#{@checksum}.yaml", $config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml"
@@ -130,16 +155,21 @@ module Pupistry
       if defined? @checksum
         $logger.info "Uploading artifact version #{@checksum}."
       else
-        # Read the symlink information to get the latest version
-        if File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.latest.yaml")
-          manifest    = YAML::load(File.open($config["general"]["app_cache"] + "/artifacts/manifest.latest.yaml"))
-          @checksum   = manifest['version']
+        @checksum = fetch_current
+
+        if @checksum
+          $logger.info "Uploading artifact version latest (#{@checksum})"
         else
-          $logger.error "No artifact exists to be uploaded at this time. Have you run pupistry build first?"
+          # If there is no current version, we can't do much....
           exit 0
         end
+      end
 
-        $logger.info "Uploading artifact version latest (#{@checksum})"
+
+      # Do we even need to upload? If nothing has changed....
+      if @checksum == fetch_latest
+        $logger.error "You've already pushed this artifact version, nothing to do."
+        exit 0
       end
 
 
@@ -183,12 +213,12 @@ module Pupistry
       # Only worth doing this step if they've explicitly set their AWS IAM credentials
       # for the agent, which should be everyone except for IAM role users.
 
-#      if $config["agent"]["aws_access_id"]
+      if $config["agent"]["aws_access_id"]
         fetch_artifact
-#      else
-#        $logger.warn "The agent's AWS credentials are unset on this machine, unable to do download test to check permissions for you."
-#        $logger.warn "Assuming you know what you're doing, please set if unsure."
-#      end
+      else
+        $logger.warn "The agent's AWS credentials are unset on this machine, unable to do download test to check permissions for you."
+        $logger.warn "Assuming you know what you're doing, please set if unsure."
+      end
 
       $logger.info "Upload of artifact version #{@checksum} completed and is now latest"
     end
@@ -281,6 +311,64 @@ module Pupistry
 
 
       $logger.info "New artifact version #{@checksum} ready for pushing"
+    end
+
+
+    def unpack
+      # Unpack the currently selected artifact to the archives directory.
+    
+      # An application version must be specified
+      unless defined? @checksum
+        raise "Application bug, trying to unpack no artifact"
+      end
+
+      # Make sure the files actually exist...
+      unless File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml")
+        $logger.error "The files expected for #{@checksum} do not appear to exist or are not readable"
+        raise "Fatal unexpected error"
+      end
+
+      unless File.exists?($config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz")
+        $logger.error "The files expected for #{@checksum} do not appear to exist or are not readable"
+        raise "Fatal unexpected error"
+      end
+
+      # Clean up an existing unpacked copy - in *theory* it should be same, but
+      # a mistake like running out of disk could have left it in an unclean state
+      # so let's make sure it's gone
+      clean_unpack
+
+
+      # Unpack the archive file
+      FileUtils.mkdir_p($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}")
+      Dir.chdir($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}") do
+
+        unless system "tar -xf ../artifact.#{@checksum}.tar.gz"
+          $logger.error "Unable to unpack artifact files to #{Dir.pwd}"
+          raise "An unexpected error occured when executing tar"
+        else
+          $logger.debug "Successfully unpacked artifact #{@checksum}"
+        end
+      end
+
+    end
+
+
+    def clean_unpack
+      # Cleanup/remove any unpacked archive directories. Requires that the
+      # checksum be set to the version to be purged.
+
+      unless defined? @checksum
+        raise "Application bug, trying to unpack no artifact"
+      end
+
+      if Dir.exists?($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}/")
+        $logger.debug "Cleaning up #{$config["general"]["app_cache"]}/artifacts/unpacked.#{@checksum}..."
+        FileUtils.rm_r $config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}", :secure => true
+      else
+        $logger.debug "Nothing to cleanup (selected artifact is not currently unpacked)"
+      end
+
     end
 
   end

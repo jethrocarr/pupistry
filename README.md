@@ -284,3 +284,8 @@ features can be found at http://www.jethrocarr.com/tag/pupistry
 
 Beer welcome.
 
+
+# License
+
+Pupistry is licensed under the Apache License, Version 2.0.
+

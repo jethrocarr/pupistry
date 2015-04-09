@@ -43,6 +43,7 @@ class CLI < Thor
       artifact.fetch_r10k
       artifact.build_artifact
 
+      puts "--"
       puts "Tip: Run pupistry diff to see what changed since the last artifact version"
 
     rescue Exception => e
@@ -54,7 +55,7 @@ class CLI < Thor
   end
 
 
-  desc "diff", "Show what has changed between now and the previous artifact"
+  desc "diff", "Show what has changed between now and the current live artifact"
   def diff
 
     # Thor seems to force class options to be defined repeatedly? :-/
@@ -71,11 +72,50 @@ class CLI < Thor
     end
 
     # Fetch the latest artifact
-    artifact          = Pupistry::Artifact.new
-    artifact.checksum = artifact.fetch_latest
-    artifact.fetch_artifact
+    artifact_upstream          = Pupistry::Artifact.new
+    artifact_upstream.checksum = artifact_upstream.fetch_latest
+
+    unless artifact_upstream.checksum
+      $logger.error "There is no upstream artifact to compare to."
+      exit 0
+    end
+
+    artifact_upstream.fetch_artifact
+
+    # Fetch the current artifact
+    artifact_current          = Pupistry::Artifact.new
+    artifact_current.checksum = artifact_current.fetch_current
+
+    unless artifact_current.checksum
+      $logger.error "There is no current artifact to compare to, run \"pupistry build\" first to generate one with current changes"
+      exit 0
+    end
+
+    artifact_current.fetch_artifact
+
+    # Unpack the archives
+    artifact_current.unpack
+    artifact_upstream.unpack
+
+    # Diff the contents. This is actually bit of a pain, there's no native way
+    # of diffing an entire directory and a lot of the gems out there that promise
+    # to do diffing a) can't handle dirs and b) generally exec out to native diff
+    # anyway. :-(
+    #
+    # So given this, we might as well go native and just rely on the system
+    # diff command to do the job.
+    
+    Dir.chdir("#{$config["general"]["app_cache"]}/artifacts/") do
+      unless system "diff -Nuar unpacked.#{artifact_upstream.checksum} unpacked.#{artifact_current.checksum}"
+      end
+    end
 
 
+    # Cleanup
+    artifact_current.clean_unpack
+    artifact_upstream.clean_unpack
+
+    puts "--"
     puts "Tip: Run pupistry push to GPG sign & upload if happy to go live"
   end
 

@@ -33,12 +33,12 @@ module Pupistry
            :proxy_uri         => $config[mode]["proxy_uri"],
           )
         else
-          $logger.warn "No AWS IAM credentials specified, defaulting to environmental discovery"
-          $logger.warn "If you get weird permissions errors, try setting the credentials explicity in config first."
+          $logger.debug "No AWS IAM credentials specified, defaulting to environmental discovery"
+          $logger.debug "If you get weird permissions errors, try setting the credentials explicity in config first."
         end
       else
-        $logger.warn "No AWS IAM credentials specified, defaulting to environmental discovery"
-        $logger.warn "If you get weird permissions errors, try setting the credentials explicity in config first."
+        $logger.debug "No AWS IAM credentials specified, defaulting to environmental discovery"
+        $logger.debug "If you get weird permissions errors, try setting the credentials explicity in config first."
       end
 
       # Setup S3 bucket
@@ -104,6 +104,10 @@ module Pupistry
             end
           end
         end
+
+      rescue AWS::S3::Errors::NoSuchKey => e
+        $logger.debug "No such file exists for download, this is normal at times."
+        return false
 
       rescue AWS::S3::Errors::NoSuchBucket => e
         $logger.fatal "S3 bucket #{$config["general"]["s3_bucket"]} does not exist"
