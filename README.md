@@ -1,7 +1,14 @@
 # WORK IN PROGRESS
 
 This project is currently in progress and not all of this documentation reflects
-where it is really at. Use this at your own peril/madness.
+where it is really at. Use this at your own peril/madness. In theory, everything
+currently works, but there will be bugs and areas of the documentation that may
+not make sense.
+
+I've marked anything I can that is in progress with TODO and workarounds/notes
+where I can. It's all under development ATM so it's changing really fast, but
+I'll happily take pull requests at even this early stage.
+
 
 # pupistry
 
@@ -266,7 +273,37 @@ The bootstrap script will:
 Once done, it's up to your Puppet manifests to build your machine how you want
 it - enjoy!
 
+TODO: Currently being worked on, for now the following is a rough example of
+what you can do to bootstrap a RHEL/CentOS7 box:
 
+    rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+    rpm -ivh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+
+    yum update --assumeyes
+    yum install --assumeyes puppet ruby-devel rubygems
+    yum install --assumeyes gcc zlib-devel libxml2-devel patch
+
+    gem install pupistry
+    mkdir /etc/pupistry
+    cat > /etc/pupistry/settings.yaml << "EOF"
+    general:
+      app_cache: ~/.pupistry/cache
+      s3_bucket: example
+      s3_prefix:
+      gpg_disable: true
+      gpg_signing_key: XXXXX
+    agent:
+      puppetcode: /etc/puppet/environments
+      access_key_id: 
+      secret_access_key: 
+      region: ap-southeast-2
+      proxy_uri:
+    EOF
+    pupistry apply --verbose
+
+It will setup the Puppet repo for RHEL 7, install updates (remember that security
+thing?) and then install the gem (and deps to build it). Then we generate the
+minimal configuration file needed, and kick off a Puppet run!
 
 
 
