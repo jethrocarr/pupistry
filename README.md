@@ -149,7 +149,7 @@ up the system service and configuring Puppet and Hiera correctly for masterless
 operation.
 
 You can fetch the module from:
-https://github.com/jethrocarr/pupistry-puppet
+https://github.com/jethrocarr/puppet-pupistry
 
 If you're doing r10k and Puppet masterless from scratch, this is probably
 something you want to make life easy.
