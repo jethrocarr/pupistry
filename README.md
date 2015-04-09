@@ -162,6 +162,7 @@ your first artifact with Pupistry (`pupistry build && pupistry push`) and then
 generate a bootstrap script for your particular OS with `pupistry bootstrap`
 
 The bootstrap script will:
+
 1. Install Puppet and Pupistry for the particular OS.
 2. Download the latest artifact
 3. Trigger a Puppet run to build your server.
@@ -265,10 +266,11 @@ When developing Pupistry, you can run the git repo copy with:
     ruby -Ilib/ -r rubygems bin/pupistry
 
 By default Pupistry will try to load a settings.yaml file in the current
-working directory, before then trying ~/.pupistry/settings.yaml and then
-finally /etc/pupistry/settings.yaml. You can also override with --config.
+working directory, before then trying `~/.pupistry/settings.yaml` and then
+finally `/etc/pupistry/settings.yaml`. You can also override with `--config`.
 
-Add --verbose for additional debugging information.
+Add `--verbose` for additional debugging information. If you have a bug this
+is the first thing you should run to get more context for reports.
 
 
 # Contributions
