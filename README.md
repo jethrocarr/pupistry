@@ -229,15 +229,16 @@ and override on a per-execution basis.
 
 You'll notice pretty quickly if something is broken when doing `puppet apply`
 
+Confused? No worried, check out the sample repo that shows a very simple setup.
+You can copy this and start your own Puppet adventure, just add in your modules
+to Puppetfile and add them to the relevent machines in manifests/site.pp.
+
+https://github.com/jethrocarr/pupistry-samplepuppet 
 
 
 TODO: Longer term intend to add support for various popular structure, but
 for now it is what it is. It's not hard, check out bin/puppistry and send
 pull requests.
-
-TODO: Provide an example repo to build from.... or maybe have smarter
-assistance in the app to check for files and find them or generate defaults
-if missing (eg hiera)
 
 
 ### Helper Module

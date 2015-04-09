@@ -54,7 +54,7 @@ build:
 
   # Define the Git repo for the Puppet manifest & r10k data
   # (ie repo where your Puppetfile & site.pp is)
-  puppetcode: git@bitbucket.org:user/example.git
+  puppetcode: git@github.com:jethrocarr/pupistry-samplepuppet.git
 
 
   # The AWS credentials with write permission to the S3 bucket for uploading
