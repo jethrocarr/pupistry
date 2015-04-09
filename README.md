@@ -47,7 +47,26 @@ a number of issues with it.
 
 Build a new artifact:
 
-    pupistry build
+    $ pupistry build
+    I, [2015-04-08T22:19:30.419392 #52534]  INFO -- : Using r10k utility to fetch the latest Puppet code
+    [R10K::Action::Deploy::Environment - INFO] Deploying environment /Users/jethro/.pupistry/cache/puppetcode/master
+    [R10K::Action::Deploy::Environment - INFO] Deploying module /Users/jethro/.pupistry/cache/puppetcode/master/modules/stdlib
+    [R10K::Action::Deploy::Environment - INFO] Deploying module /Users/jethro/.pupistry/cache/puppetcode/master/modules/ruby
+    [R10K::Action::Deploy::Environment - INFO] Deploying module /Users/jethro/.pupistry/cache/puppetcode/master/modules/gcc
+    [R10K::Action::Deploy::Environment - INFO] Deploying module /Users/jethro/.pupistry/cache/puppetcode/master/modules/inifile
+    [R10K::Action::Deploy::Environment - INFO] Deploying module /Users/jethro/.pupistry/cache/puppetcode/master/modules/vcsrepo
+    [R10K::Action::Deploy::Environment - INFO] Deploying module /Users/jethro/.pupistry/cache/puppetcode/master/modules/git
+    [R10K::Action::Deploy::Environment - INFO] Deploying module /Users/jethro/.pupistry/cache/puppetcode/master/modules/ntp
+    [R10K::Action::Deploy::Environment - INFO] Deploying module /Users/jethro/.pupistry/cache/puppetcode/master/modules/firewall
+    [R10K::Action::Deploy::Environment - INFO] Deploying module /Users/jethro/.pupistry/cache/puppetcode/master/modules/soe
+    I, [2015-04-08T22:21:21.705315 #52534]  INFO -- : r10k run completed
+    I, [2015-04-08T22:21:21.706023 #52534]  INFO -- : Creating artifact...
+    I, [2015-04-08T22:21:21.999753 #52534]  INFO -- : Compressing artifact...
+    I, [2015-04-08T22:21:22.103131 #52534]  INFO -- : Building manifest information for artifact...
+    I, [2015-04-08T22:21:22.107012 #52534]  INFO -- : New artifact version 3f29c324aab076cd81667f9031a675e7 ready for pushing
+    --
+    Tip: Run pupistry diff to see what changed since the last artifact version
+
 
 Note that artifact builds are done from the upstream git repos, so if you
 have made changes, remember to git push first before generating. The tool will
@@ -56,13 +75,29 @@ remind you if it detects nothing has changed since the last run.
 Once your artifact is built, you can double check what has changed in the
 Puppet modules since the last run with:
 
-    pupistry diff
+    $ pupistry diff
+    diff -Nuar unpacked.3f29c324aab076cd81667f9031a675e7/puppetcode/master/README.md unpacked.4a522dd22c0453e1e3ec3d17dfed151b/puppetcode/master/README.md
+    --- unpacked.3f29c324aab076cd81667f9031a675e7/puppetcode/master/README.md	2015-04-08 22:19:42.000000000 +1200
+    +++ unpacked.4a522dd22c0453e1e3ec3d17dfed151b/puppetcode/master/README.md	2015-04-08 23:01:14.000000000 +1200
+    @@ -1 +1,4 @@
+     Personal Puppet Repo
+     +
+     +Example of a changed file in a module somewhere, nice and visible for all to see.
+     +
+     --
+     Tip: Run pupistry push to GPG sign & upload if happy to go live
 
 
 Finally when you're happy, push it to S3 to be delivered to all your servers. 
-If you have gpg signing enabled, it will ask you to sign here.
+If you have gpg signing enabled, it will ask you to sign here... or tell you
+off if you have it disabled. :-)
 
-    pupistry push
+    $ pupistry push
+    I, [2015-04-08T22:52:01.020865 #53037]  INFO -- : Uploading artifact version latest (3f29c324aab076cd81667f9031a675e7)
+    W, [2015-04-08T22:52:01.888356 #53037]  WARN -- : You have GPG signing *disabled*, whilst not critical it does weaken your security.
+    W, [2015-04-08T22:52:01.888418 #53037]  WARN -- : Skipping signing step...
+    I, [2015-04-08T22:52:03.043886 #53037]  INFO -- : Upload of artifact version 3f29c324aab076cd81667f9031a675e7 completed and is now latest
+
 
 
 ## Bootstrapping nodes
@@ -81,25 +116,38 @@ data field of most cloud providers like AWS or Digital Ocean.
 
 ## Running Puppet on target nodes
 
+Pupistry replaces the need to call Puppet directly. Instead, call Pupistry with
+and it will handle getting the artifact and then executing Puppet for you. It
+respects some parameters like --environment and --noop for easy testing of new
+manifests and modules.
+
+At it's simpliest, to apply the current Puppet manifests:
+
+    $ pupistry apply
+    I, [2015-04-10T00:44:40.623101 #6726]  INFO -- : Pulling latest artifact....
+    I, [2015-04-10T00:44:42.700540 #6726]  INFO -- : Executing Puppet...
+    Notice: Compiled catalog for testhost1 in environment master in 2.21 seconds
+    Notice: Finished catalog run in 3.07 seconds
+
+
 Check what is going to be applied (Puppet in --noop mode)
 
     pupistry apply --noop
 
-
-Apply the current Puppet manifests:
-
-    pupistry apply
-
 Specify an alternative environment:
 
     pupistry apply --environment staging
-
 
 Run pupistry as a system daemon. When you use the companion Puppet module, a
 system init file gets installed that sets this daemon up for you automatically.
 
     pupistry apply --daemon
 
+
+Alternatively, if you don't wish to use Pupistry to run the nodes, you don't
+have to. You can use Pupistry to build the artifacts and then pull them down
+and unpack via any means you find appropiate. It's just standard S3 + tar with
+some YAML and optional GPG signing.
 
 
 # Installation
@@ -118,6 +166,7 @@ Alternatively if you like living on the edge, download this repository and run:
     gem install pupistry-VERSION.gem
     pupistry setup
 
+TODO: Currently setup not implemented, copy the sample file provided.
 
 ## 2. S3 Bucket
 
@@ -138,7 +187,53 @@ needing to create explicit IAM credentials for the agents/servers.
 
 
 
-## 3. Helper Puppet Module
+## 3. Puppet Manifests & Configuration
+
+### Puppet Code Structure
+
+The following is the expected minmum structure of the Puppetcode repository to
+enable it to work with Pupistry:
+    /Puppetfile
+    /hiera.yaml
+    /manifests/site.pp
+
+Puppetfile is standard r10k and site.pp is standard Puppet. The Hiera config
+is generally normal, but you do need to define a datadir to tell Puppet to look
+where the puppetcode gets unpacked to. Generally the following sample Hiera
+will do the trick:
+    ---
+    :backends: yaml
+    :yaml:
+      :datadir: "%{::settings::confdir}/environments/%{::environment}/hieradata"
+    :hierarchy:
+     - "environments/%{::environment}"
+     - "nodes/%{::hostname}"
+     - common
+
+Then in Pupistry, the following configuration should be used for the agent (or
+subsitute /etc/puppet/ for wherever your platform has %{::settings::confdir}
+set to).
+      agent:
+        puppetcode: /etc/puppet/environments
+
+Pupistry will default to applying the "master" branch if one is not listed, if
+you are doing branch-based environments, you can specifiy when bootstrapping
+and override on a per-execution basis.
+
+You'll notice pretty quickly if something is broken when doing `puppet apply`
+
+
+
+TODO: Longer term intend to add support for various popular structure, but
+for now it is what it is. It's not hard, check out bin/puppistry and send
+pull requests.
+
+TODO: Provide an example repo to build from.... or maybe have smarter
+assistance in the app to check for files and find them or generate defaults
+if missing (eg hiera)
+
+
+### Helper Module
 
 Whilst you can use Pupistry to roll out any particular design of Puppet
 manifests, you will save yourself a lot of pain by also including the Pupistry
@@ -153,6 +248,7 @@ https://github.com/jethrocarr/puppet-pupistry
 
 If you're doing r10k and Puppet masterless from scratch, this is probably
 something you want to make life easy.
+
 
 
 ## 4. Bootstrapping Nodes
@@ -172,6 +268,8 @@ it - enjoy!
 
 
 
+
+
 # Tutorials
 
 If you're looking for a more complete introduction to doing masterless Puppet
@@ -182,8 +280,6 @@ TUTORIAL LINK HERE
 By following this tutorial you can go from nothing, to having a complete up
 and running masterless Puppet environment using Pupistry. It covers the very
 basics of setting up your r10k environment.
-
-
 
 
 # Caveats & Future Plans
