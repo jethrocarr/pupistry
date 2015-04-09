@@ -1,0 +1,70 @@
+## Configuration file for Pupistry.
+
+
+# The following settings apply for all use cases of Pupistry and must be set
+general:
+
+  # We need somewhere to cache files like archives and git repos. This will
+  # be as big as the total size of all your git repos when being used to
+  # build artifacts. Agent-only systems will be far smaller as it only includes
+  # the latest version of the artifacts.
+  app_cache: ~/.pupistry/cache
+
+  # The S3 bucket must be set in order to have a place to push and
+  # pull artifact and manifests from. This bucket should be PRIVATE, we
+  # only want your servers accessing the files!
+  #
+  # REMEMBER - S3 buckets are a global namespace, other people might have
+  # already picked the name you want. Make sure you update this default
+  # with something you actually own :-)
+  s3_bucket: example
+
+  # S3 prefix is entirely optional, useful if you're reusing/sharing an S3
+  # bucket with other applications. Leave blank if not needed.
+  s3_prefix:
+
+  # GPG key to use for signing & validating the artifacts. It is possible to
+  # run pupistry in an unsigned mode, but you will lose the protection against
+  # someone with access to the S3 bucket tampering with the files and pushing
+  # malicious puppet manifests to your servers
+  gpg_disable: true
+  gpg_signing_key: XXXXXX
+
+
+# Settings for agents, these are required on the machines that will be
+# downloading and applying artifacts but also need to be set for build
+# machines so we can popular bootstrap templates for you and automatically
+# check stuff like IAM permissions before you roll your hosts.
+agent:
+  puppetcode: /etc/puppet/environents/
+
+  # The AWS credentials with READ permission to the S3 bucket for downloading
+  # artifact files. If unset, we try to figure it out from any AWS creds
+  access_key_id:
+  secret_access_key:
+  region: ap-southeast-2
+  proxy_uri:
+
+
+
+# The following settings are only needed on the build machines (people building
+# new artifacts) and are not needed on the actual agent servers that will be
+# downloading and applying them.
+build:
+
+  # Define the Git repo for the Puppet manifest & r10k data
+  # (ie repo where your Puppetfile & site.pp is)
+  puppetcode: git@bitbucket.org:user/example.git
+
+
+  # The AWS credentials with write permission to the S3 bucket for uploading
+  # new artifact files. If unset, we try to figure it out from any AWS creds
+  # set in the environmnt, but you're best to make it explicit here to avoid
+  # surprises....
+  #
+  access_key_id:
+  secret_access_key:
+  region: ap-southeast-2
+  proxy_uri:
+
+
