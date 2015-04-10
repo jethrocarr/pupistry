@@ -230,7 +230,7 @@ Pupistry will default to applying the "master" branch if one is not listed, if
 you are doing branch-based environments, you can specifiy when bootstrapping
 and override on a per-execution basis.
 
-You'll notice pretty quickly if something is broken when doing `puppet apply`
+You'll notice pretty quickly if something is broken when doing `pupistry apply`
 
 Confused? No worried, check out the sample repo that shows a very simple setup.
 You can copy this and start your own Puppet adventure, just add in your modules
