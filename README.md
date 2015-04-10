@@ -258,7 +258,11 @@ You can fetch the module from:
 https://github.com/jethrocarr/puppet-pupistry
 
 If you're doing r10k and Puppet masterless from scratch, this is probably
-something you want to make life easy.
+something you want to make life easy. With r10k, just add the following to your
+Puppetfile:
+
+    # Install the Pupistry companion module
+    mod 'jethrocarr/pupistry'
 
 
 
