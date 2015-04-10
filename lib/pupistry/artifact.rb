@@ -59,7 +59,7 @@ module Pupistry
       # Execute R10k with the provided configuration
       $logger.debug "Executing r10k"
 
-      if system "r10k deploy environment -c #{$config["general"]["app_cache"]}/r10kconfig.yaml -pv"
+      if system "r10k deploy environment -c #{$config["general"]["app_cache"]}/r10kconfig.yaml -pv debug"
         $logger.info "r10k run completed"
       else
         $logger.error "r10k run failed, unable to generate artifact"
@@ -217,7 +217,7 @@ module Pupistry
       # Only worth doing this step if they've explicitly set their AWS IAM credentials
       # for the agent, which should be everyone except for IAM role users.
 
-      if $config["agent"]["aws_access_id"]
+      if $config["agent"]["access_key_id"]
         fetch_artifact
       else
         $logger.warn "The agent's AWS credentials are unset on this machine, unable to do download test to check permissions for you."
