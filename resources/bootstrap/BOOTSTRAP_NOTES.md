@@ -11,7 +11,7 @@ DO:
 * Install Puppet from the most OS-native source possible - either distribution repos, or Puppetlab's repos.
 * Install Pupistry from the most OS-native source - either distribution repos, or rubygems.
 * Install the latest OS updates for the platform - not all users will want this, but we should provide a good default security example.
-
+* Wrap the user data in a Bash subshell & log all output to syslog - most systems are headless and it's very useful for debug
 
 DON'T:
 
