@@ -109,16 +109,56 @@ off if you have it disabled. :-)
 
 ## Bootstrapping nodes
 
-You need to bootstrap your masterless nodes, which involves installing Pupistry
-and setting up Puppet configuration accordingly.
+New machines need to be bootstrapped in order to install Pupistry, configure it
+and be able to download configuration. Generally this is a step done differently
+site-by-site (and you can still do it that way if you want), but if you want a
+nice easy life, Pupistry can generate you a bootstrap script for your platform.
 
-    pupistry bootstrap
+    $ pupistry bootstrap
+    - rhel-7
+    - ubuntu-14.04
 
-    pupistry boostrap --template rhel7
+    $ pupistry boostrap --template rhel-7
+    # Bootstrap for Red Hat Enterprise Linux Platform
+    # Compatible with RHEL 7, CentOS 7 and maybe other variations.
+    
+    rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+    rpm -ivh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+    
+    yum update --assumeyes
+    yum install --assumeyes puppet ruby-devel rubygems
+    yum install --assumeyes gcc zlib-devel libxml2-devel patch
+    
+    gem install pupistry
+    mkdir /etc/pupistry
+    cat > /etc/pupistry/settings.yaml << "EOF"
+    general:
+      app_cache: ~/.pupistry/cache
+      s3_bucket: example
+      s3_prefix:
+      gpg_disable: true
+      gpg_signing_key: XYZXYZ
+    agent:
+      puppetcode: /etc/puppet/environents/
+      access_key_id: 
+      secret_access_key: 
+      region: ap-southeast-2
+      proxy_uri:
+    EOF
+    pupistry apply --verbose
 
+You generally can run this on a new non-Puppetised machine, or paste into the
+user data field of most cloud providers like AWS or Digital Ocean. If using CFN
+with AWS, you can make it part of the stack itself.
 
-You generally can run this on a new non-Puppetised machine, or into the user
-data field of most cloud providers like AWS or Digital Ocean.
+These bootstraps aren't mandatory, if you prefer a different approach you can
+use these as an example and write your own - generally the essential bit is to
+get puppet installed, get pupistry (and deps to build it's gems) installed and
+write the config before finally executing your first Pupistry/Puppet run.
+
+If using AWS and IAM Roles feature, it is acceptable for access_key_id and
+secret_access_key to be blank, if not you will need to have these set to an
+account with read-only access to the configured S3 bucket!
 
 
 ## Running Puppet on target nodes
@@ -266,7 +306,7 @@ Puppetfile:
 
 
 
-## 4. Bootstrapping Nodes
+## 4. Building you first node (Bootstrapping)
 
 No need for manual configuration of your servers/nodes, you just need to build
 your first artifact with Pupistry (`pupistry build && pupistry push`) and then
@@ -278,41 +318,12 @@ The bootstrap script will:
 2. Download the latest artifact
 3. Trigger a Puppet run to build your server.
 
-Once done, it's up to your Puppet manifests to build your machine how you want
-it - enjoy!
+These bootstrap scripts can be generated for you. Refer to "Bootstrapping" under
+"Usage" instructions above for details.
 
-TODO: Currently being worked on, for now the following is a rough example of
-what you can do to bootstrap a RHEL/CentOS7 box:
-
-    rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
-    rpm -ivh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
-
-    yum update --assumeyes
-    yum install --assumeyes puppet ruby-devel rubygems
-    yum install --assumeyes gcc zlib-devel libxml2-devel patch
-
-    gem install pupistry
-    mkdir /etc/pupistry
-    cat > /etc/pupistry/settings.yaml << "EOF"
-    general:
-      app_cache: ~/.pupistry/cache
-      s3_bucket: example
-      s3_prefix:
-      gpg_disable: true
-      gpg_signing_key: XXXXX
-    agent:
-      puppetcode: /etc/puppet/environments
-      access_key_id: 
-      secret_access_key: 
-      region: ap-southeast-2
-      proxy_uri:
-    EOF
-    pupistry apply --verbose
-
-It will setup the Puppet repo for RHEL 7, install updates (remember that security
-thing?) and then install the gem (and deps to build it). Then we generate the
-minimal configuration file needed, and kick off a Puppet run!
-
+The bootstrap script goal is to get you from stock OS to running Pupistry and
+doing your first Puppet run. After that - it's up to you and your Puppet
+skills to make your node actually do something useful. :-)
 
 
 # Tutorials

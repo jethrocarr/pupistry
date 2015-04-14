@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'aws-sdk-v1'
   s.add_runtime_dependency 'thor'
+  s.add_runtime_dependency 'erubis'
 
   # Now technically we don't call r10k from this gem, instead we call it via
   # system, but we can cheat a bit and list it here to get it installed for us.

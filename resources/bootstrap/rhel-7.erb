@@ -1,0 +1,28 @@
+# Bootstrap for Red Hat Enterprise Linux Platform
+# Compatible with RHEL 7, CentOS 7 and maybe other variations.
+
+rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
+rpm -ivh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+
+yum update --assumeyes
+yum install --assumeyes puppet ruby-devel rubygems
+yum install --assumeyes gcc zlib-devel libxml2-devel patch
+
+gem install pupistry
+mkdir /etc/pupistry
+cat > /etc/pupistry/settings.yaml << "EOF"
+general:
+  app_cache: ~/.pupistry/cache
+  s3_bucket: <%= s3_bucket %>
+  s3_prefix: <%= s3_prefix %>
+  gpg_disable: <%= gpg_disable %>
+  gpg_signing_key: <%= gpg_signing_key %>
+agent:
+  puppetcode: <%= puppetcode %>
+  access_key_id: <%= access_key_id %>
+  secret_access_key: <%= secret_access_key %>
+  region: <%= region %>
+  proxy_uri: <%= proxy_uri %>
+EOF
+pupistry apply --verbose
+

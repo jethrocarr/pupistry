@@ -1,4 +1,5 @@
 require 'rubygems'
+require 'erubis'
 
 module Pupistry
   # Pupistry::Bootstrap
@@ -6,16 +7,82 @@ module Pupistry
   class Bootstrap
     attr_accessor :template_dir
 
-    def initalize
-      template_dir = "dir"
+    def initialize
+
+      # We need to find where the templates are located - either it should be
+      # in the current working directory, or if we are an installed gem, we
+      # can try the gem's installed path.
+
+      if Dir.exists?("resources/bootstrap/")
+        # Use local PWD version first if possible
+        @template_dir = Dir.pwd
+      else
+        # Check for GEM installed location
+        begin
+          @template_dir = Gem::Specification.find_by_name("pupistry").gem_dir
+        rescue Gem::LoadError
+          $logger.error "Unable to find templates/ directory, doesn't appear we are running from project dir nor as a Gem"
+          return false
+        end
+      end
+
+      @template_dir = @template_dir.chomp("/") + "/resources/bootstrap/"
+
+      unless Dir.exists?(@template_dir)
+        $logger.error "Unable to find templates dir at #{@template_dir}, unable to proceed."
+        return false
+      else
+        $logger.debug "Using directory #{@template_dir} for bootstrap templates"
+      end
+
     end
     
-    def self.templates_list
-      # glob all the templates
-      puts "Template"
+
+    def list
+      # Simply glob the templates directory and list their names.
+      $logger.debug "Finding all available templates"
+
+      Dir.glob("#{@template_dir}/*.erb").each do |file|
+        puts "- #{File.basename(file, ".erb")}"
+      end
     end
 
 
+    def build template
+      # Build a template with the configured parameters already to go
+      $logger.debug "Generating a bootstrap script for #{template}"
+
+      unless File.exists?("#{@template_dir}/#{template}.erb")
+        $logger.error "The requested template does not exist, unable to build"
+        return 0
+      end
+
+      # Assume values we care about
+      template_values = {
+        s3_bucket: $config["general"]["s3_bucket"],
+        s3_prefix: $config["general"]["s3_prefix"],
+        gpg_disable: $config["general"]["gpg_disable"],
+        gpg_signing_key: $config["general"]["gpg_signing_key"],
+        puppetcode: $config["agent"]["puppetcode"],
+        access_key_id: $config["agent"]["access_key_id"],
+        secret_access_key: $config["agent"]["secret_access_key"],
+        region: $config["agent"]["region"],
+        proxy_uri: $config["agent"]["proxy_uri"],
+      }
+
+      # Generate template using ERB
+      begin
+        template_contents = Erubis::Eruby.new(File.read("#{@template_dir}/#{template}.erb")).result(template_values)
+      rescue Exception => e
+        $logger.error "An unexpected error occured when trying to generate the bootstrap template"
+        raise e
+      end
+
+      # Output template
+      puts "-- Bootstrap Start --"
+      puts template_contents
+      puts "-- Bootstrap End --"
+    end
   end
 end
 

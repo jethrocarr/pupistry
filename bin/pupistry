@@ -286,11 +286,15 @@ class CLI < Thor
 
     if options[:template]
       $logger.info "Generating bootstrap template #{options[:template]}"
-    else
-      puts "Listing all avaible templates"
-      Pupistry::Bootstrap.templates_list
 
-      
+      templates = Pupistry::Bootstrap.new
+      templates.build options[:template]
+    else
+      templates = Pupistry::Bootstrap.new
+      templates.list
+     
+      puts "--"
+      puts "Tip: Run `pupistry bootstrap --template example` to generate a specific template"
     end
       
   end
