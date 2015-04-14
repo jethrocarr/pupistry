@@ -111,6 +111,27 @@ module Pupistry
     end
 
 
+    def fetch_installed
+      # Fetch the current version that is installed.
+      
+      # Make sure the Puppetcode install directory exists
+      unless Dir.exists?($config["agent"]["puppetcode"])
+        $logger.warn "The destination path of #{$config["agent"]["puppetcode"]} does not appear to exist or is not readable"
+        return 0
+      end
+
+      # Look for a manifest file in the directory and read the version from it.
+      if File.exists?($config["agent"]["puppetcode"] + "/manifest.pupistry.yaml")
+        manifest = YAML::load(File.open($config["agent"]["puppetcode"] + "/manifest.pupistry.yaml"))
+
+        return manifest['version']
+      else
+        $logger.warn "No current version installed"
+        return 0
+      end
+    end
+
+
     def fetch_artifact
 
       # Figure out which version to fetch (if not explicitly defined)
@@ -387,6 +408,7 @@ module Pupistry
       # Clone unpacked contents to the installation directory
       begin
         FileUtils.cp_r $config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}/puppetcode/.", $config["agent"]["puppetcode"]
+        FileUtils.cp   $config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml", $config["agent"]["puppetcode"] + "/manifest.pupistry.yaml"
         return true
       rescue
         $logger.fatal "An unexpected error occured when copying the unpacked artifact to #{$config["agent"]["puppetcode"]}"
@@ -394,7 +416,6 @@ module Pupistry
       end
 
     end
-
 
     def clean_install
       # Cleanup the destination installation directory before we unpack the artifact
