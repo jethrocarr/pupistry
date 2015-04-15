@@ -46,7 +46,15 @@ module Pupistry
 
     def self.find_and_load
       $logger.debug "Looking for configuration file in common locations"
-  
+
+      # If the HOME environmental hasn't been set (which can happen when
+      # running via some cloud user-data/init systems) the app will die
+      # horribly, we should set a HOME path default.
+      unless ENV['HOME']
+        $logger.warn "No HOME environmental set, defaulting to /tmp"
+        ENV['HOME'] = "/tmp"
+      end
+
       # Locations in order of preference:
       # settings.yaml (current dir)
       # ~/.pupistry/settings.yaml
