@@ -1,0 +1,33 @@
+#!/bin/bash
+# Bootstrap for Fedora, generally made to be compatible with any version to
+# keep up with the rapid rate of Fedora releases. We don't bother trying to
+# support any version of Fedora older than the current release due to the
+# 6 month EOL.
+(
+exec 1> >(logger -s -t user-data) 2>&1
+
+yum install --assumeyes redhat-lsb-core
+rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-fedora-`lsb_release -sr`.noarch.rpm
+
+yum update --assumeyes
+yum install --assumeyes puppet ruby-devel rubygems gcc zlib-devel libxml2-devel patch
+
+gem install pupistry
+mkdir /etc/pupistry
+cat > /etc/pupistry/settings.yaml << "EOF"
+general:
+  app_cache: ~/.pupistry/cache
+  s3_bucket: <%= s3_bucket %>
+  s3_prefix: <%= s3_prefix %>
+  gpg_disable: <%= gpg_disable %>
+  gpg_signing_key: <%= gpg_signing_key %>
+agent:
+  puppetcode: <%= puppetcode %>
+  access_key_id: <%= access_key_id %>
+  secret_access_key: <%= secret_access_key %>
+  region: <%= region %>
+  proxy_uri: <%= proxy_uri %>
+EOF
+pupistry apply --verbose
+
+)
