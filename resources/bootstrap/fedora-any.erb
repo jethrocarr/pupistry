@@ -1,10 +1,14 @@
-#!/bin/bash
+#!/bin/bash -x
 # Bootstrap for Fedora, generally made to be compatible with any version to
 # keep up with the rapid rate of Fedora releases. We don't bother trying to
 # support any version of Fedora older than the current release due to the
 # 6 month EOL.
 (
-exec 1> >(logger -s -t user-data) 2>&1
+# No need for logger with Fedora, cloud-init logs all the user-data output.
+
+# Sometimes Fedora runs user-data before networking is ready, so we should
+# make sure the network is ready before starting to try and downlod stuff!
+t=300; c=0; r=0; until ping -c 1 www.google.com >/dev/null 2>&1 || ((++c >= t)); do r=$?; echo "Waiting for network... ($r)"; done
 
 yum install --assumeyes redhat-lsb-core
 rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-fedora-`lsb_release -sr`.noarch.rpm

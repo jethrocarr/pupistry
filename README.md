@@ -355,18 +355,22 @@ is working nicely.
 
 ## Bootstrap Functionality
 
-Currently Pupistry only supports generation of bootstrap for CentOS 7 & Ubuntu
-14.04. Other distributions will be added, but it may take time to get to your
-particular favourite distribution.
+Currently Pupistry only supports generation of bootstrap for select popular
+distributions and platforms. Other distributions will be added, but it may take
+time to get to your particular favourite distribution.
 
 Note that it isn't a show stopper if support for your platform of choice
 doesn't yet exist -  you can use pupistry with pretty much any nix platform,
 you'll just not have the handy advantage of automatically generated bootstrap
-for your servers.
+for your servers. And in many cases, one of the existing ones can easily be
+adapted to your platform of choice.
 
 If you do customise it for a different platform, pull requests are VERY
 welcome, I'll add pretty much any OS if you write a decent bootstrap template
 for it.
+
+Please see resources/bootstrap/BOOTSTRAP_NOTES.md for more details on how to
+write and debug bootstrap templates.
 
 
 ## Continious Deployment
