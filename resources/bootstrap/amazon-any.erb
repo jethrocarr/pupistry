@@ -1,0 +1,39 @@
+#!/bin/bash -x
+# This bootstrap is specifcially for Amazon's Linux AMIs, if you are using
+# other distributions like Ubuntu or CentOS on AWS, use those bootstrap
+# templates.
+#
+# Amazon Linux is based on RHEL, but has a lot more variations that other
+# clones like CentOS, such as shipping with multiple versions of Puppet
+# and Ruby - which is useful, but can also make life.... interesting.
+(
+exec 1> >(logger -s -t user-data) 2>&1
+
+export PATH=$PATH:/usr/local/bin
+
+yum update --assumeyes
+yum install --assumeyes puppet3 ruby-devel rubygems gcc zlib-devel libxml2-devel patch
+
+# Not sure why this doesn't get pulled down properly, maybe it's core and
+# Amazon didn't package it properly? Need it for Thor which is used by Pupistry
+gem install io-console
+
+gem install pupistry
+mkdir /etc/pupistry
+cat > /etc/pupistry/settings.yaml << "EOF"
+general:
+  app_cache: ~/.pupistry/cache
+  s3_bucket: <%= s3_bucket %>
+  s3_prefix: <%= s3_prefix %>
+  gpg_disable: <%= gpg_disable %>
+  gpg_signing_key: <%= gpg_signing_key %>
+agent:
+  puppetcode: <%= puppetcode %>
+  access_key_id: <%= access_key_id %>
+  secret_access_key: <%= secret_access_key %>
+  region: <%= region %>
+  proxy_uri: <%= proxy_uri %>
+EOF
+pupistry apply --verbose
+
+)
