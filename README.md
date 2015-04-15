@@ -115,11 +115,10 @@ site-by-site (and you can still do it that way if you want), but if you want a
 nice easy life, Pupistry can generate you a bootstrap script for your platform.
 
     $ pupistry bootstrap
-    - rhel-7
+    - centos-7
     - ubuntu-14.04
 
-    $ pupistry boostrap --template rhel-7
-    # Bootstrap for Red Hat Enterprise Linux Platform
+    $ pupistry boostrap --template centos-7
     # Compatible with RHEL 7, CentOS 7 and maybe other variations.
     
     rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm

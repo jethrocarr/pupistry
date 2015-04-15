@@ -1,6 +1,11 @@
 #!/bin/bash -x
-# Bootstrap for Red Hat Enterprise Linux Platform
-# Compatible with RHEL 7, CentOS 7 and maybe other variations.
+# Bootstrap for CentOS 7 and maybe other EL-derived platforms.
+#
+# Note: Amusingly doesn't actually work on RHEL itself, since ruby-devel
+#       does not seem to exist on it :-/ If you actually care about RHEL
+#       itself, I'll happily accept a pull request that does whatever is
+#       needed to fix ruby-devel on RHEL.
+#
 (
 exec 1> >(logger -s -t user-data) 2>&1
 

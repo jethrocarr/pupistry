@@ -24,7 +24,7 @@ DON'T:
 
 # Examples
 
-See the "rhel-7" or "ubuntu-14.04" templates for examples on how the bootstrap
+See the "centos-7" or "ubuntu-14.04" templates for examples on how the bootstrap
 templates should be written. The "fedora-any" template also shows an example of
 dealing with networking not being ready and also how to handle frequently
 changing distribution versions.
