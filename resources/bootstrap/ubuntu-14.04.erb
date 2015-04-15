@@ -1,1 +1,36 @@
-Need to write this one! :-)
+#!/bin/bash
+# Bootstrap for Ubuntu 14.04 LTS (Trusty)
+# It will *probably* work with other Ubuntu versions supported by Puppetlabs.
+# It *might* work with other Ubuntu or Debian derived systems inc Debian.
+(
+exec 1> >(logger -s -t user-data) 2>&1
+
+wget -O /tmp/puppetlabs-release.deb https://apt.puppetlabs.com/puppetlabs-release-`lsb_release -sc`.deb
+dpkg -i /tmp/puppetlabs-release.deb
+
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update
+apt-get -y upgrade
+
+apt-get install -y puppet ruby ruby-dev zlib1g-dev libxml2-dev make patch
+
+gem install pupistry
+mkdir /etc/pupistry
+cat > /etc/pupistry/settings.yaml << "EOF"
+general:
+  app_cache: ~/.pupistry/cache
+  s3_bucket: <%= s3_bucket %>
+  s3_prefix: <%= s3_prefix %>
+  gpg_disable: <%= gpg_disable %>
+  gpg_signing_key: <%= gpg_signing_key %>
+agent:
+  puppetcode: <%= puppetcode %>
+  access_key_id: <%= access_key_id %>
+  secret_access_key: <%= secret_access_key %>
+  region: <%= region %>
+  proxy_uri: <%= proxy_uri %>
+EOF
+pupistry apply --verbose
+
+)
