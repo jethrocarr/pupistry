@@ -18,6 +18,7 @@ DON'T:
 * Use third party respositories or download sites, it needs to be stock vendor OS and packages.
 * Execute code from third party sites (eg no wget http://example.com/malware/myscript.sh)
 * Tie user data to any particular cloud provider unless unavoidable for that platform.
+* Make the script any more complex than it needs to be.
 
 
 # Examples
@@ -25,4 +26,10 @@ DON'T:
 See the "rhel-7" or "ubuntu-14.04" templates for examples on how the bootstrap
 templates should be written.
 
+
+# Life Span
+
+Any distribution that is EOL and no longer supported by either the distribution
+or by Puppetlabs will be subject to removal to keep the bootstrap selection
+modern and clean. Pull requests to clean up cruft are accepted.
 
