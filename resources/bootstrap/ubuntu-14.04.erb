@@ -13,7 +13,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get -y upgrade
 
-apt-get install -y puppet ruby ruby-dev zlib1g-dev libxml2-dev make patch
+apt-get install -y puppet ruby ruby-dev zlib1g-dev libxml2-dev gcc make patch
 
 gem install pupistry
 mkdir /etc/pupistry
