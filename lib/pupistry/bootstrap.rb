@@ -1,4 +1,5 @@
 require 'rubygems'
+require "base64"
 require 'erubis'
 
 module Pupistry
@@ -6,6 +7,7 @@ module Pupistry
 
   class Bootstrap
     attr_accessor :template_dir
+    attr_accessor :contents
 
     def initialize
 
@@ -49,7 +51,9 @@ module Pupistry
 
 
     def build template
-      # Build a template with the configured parameters already to go
+      # Build a template with the configured parameters already to go and save
+      # into the object, so it can be outputted in the desired format.
+
       $logger.debug "Generating a bootstrap script for #{template}"
 
       unless File.exists?("#{@template_dir}/#{template}.erb")
@@ -72,17 +76,30 @@ module Pupistry
 
       # Generate template using ERB
       begin
-        template_contents = Erubis::Eruby.new(File.read("#{@template_dir}/#{template}.erb")).result(template_values)
+        @contents = Erubis::Eruby.new(File.read("#{@template_dir}/#{template}.erb")).result(template_values)
       rescue Exception => e
         $logger.error "An unexpected error occured when trying to generate the bootstrap template"
         raise e
       end
 
-      # Output template
+    end
+
+    def output_plain
+      # Do nothing clever, just output the template data.
       puts "-- Bootstrap Start --"
-      puts template_contents
+      puts @contents
       puts "-- Bootstrap End --"
     end
+
+    def output_base64
+      # Some providers like AWS can accept the data in Base64 version which is
+      # smaller and less likely to get messed up by copy and paste or weird
+      # formatting issues.
+      puts "-- Bootstrap Start --"
+      puts Base64.encode64(@contents)
+      puts "-- Bootstrap End --"
+    end
+
   end
 end
 

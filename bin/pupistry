@@ -267,7 +267,8 @@ class CLI < Thor
 
 
   desc "bootstrap", "Generate a user-data bootstrap script for a node"
-  method_option :template, :type => :string
+  method_option :template, :type => :string, :desc => 'The template you want to generate'
+  method_option :base64, :type => :boolean, :desc => 'Output in base64 format'
   def bootstrap
 
     # Thor seems to force class options to be defined repeatedly? :-/
@@ -289,6 +290,12 @@ class CLI < Thor
 
       templates = Pupistry::Bootstrap.new
       templates.build options[:template]
+
+      if options[:base64]
+        templates.output_base64
+      else
+        templates.output_plain
+      end
     else
       templates = Pupistry::Bootstrap.new
       templates.list
