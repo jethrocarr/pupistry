@@ -36,7 +36,9 @@ general:
 # machines so we can popular bootstrap templates for you and automatically
 # check stuff like IAM permissions before you roll your hosts.
 agent:
-  puppetcode: /etc/puppet/environents/
+  # Puppet3 doesn't care what this is, but if using Puppet4, you need to set it
+  # to /etc/puppetlabs/code/environments otherwise it blows up.
+  puppetcode: /etc/puppetlabs/code/environments
 
   # The AWS credentials with READ permission to the S3 bucket for downloading
   # artifact files. If unset, we try to figure it out from any AWS creds
