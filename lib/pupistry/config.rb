@@ -69,6 +69,9 @@ module Pupistry
       elsif File.exists?( File.expand_path "~/.pupistry/settings.yaml" )
         config = File.expand_path "~/.pupistry/settings.yaml"
 
+      elsif File.exists?("/usr/local/etc/pupistry/settings.yaml")
+        config = "/usr/local/etc/pupistry/settings.yaml"
+
       elsif File.exists?("/etc/pupistry/settings.yaml")
         config = "/etc/pupistry/settings.yaml"
 

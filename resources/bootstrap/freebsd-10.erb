@@ -15,8 +15,8 @@ env ASSUME_ALWAYS_YES=YES pkg upgrade --yes
 env ASSUME_ALWAYS_YES=YES pkg install --yes ruby devel/ruby-gems puppet gnupg
 
 /usr/local/bin/gem install pupistry
-mkdir /etc/pupistry
-cat > /etc/pupistry/settings.yaml << EOF
+mkdir /usr/local/etc/pupistry
+cat > /usr/local/etc/pupistry/settings.yaml << EOF
 general:
   app_cache: ~/.pupistry/cache
   s3_bucket: <%= s3_bucket %>
