@@ -4,11 +4,12 @@
 # vs the general behavior we expect from bash on Linux distributions
 
 # Known Issues:
-# * tcsh makes capturing all the output to syslog difficult
+# * AWS and Digital Ocean issues:
+#   http://www.jethrocarr.com/2015/04/19/freebsd-in-the-cloud/
+# * Puppet and PkgNg issues:
+#   https://www.jethrocarr.com/2015/04/22/puppet-3-and-4-on-freebsd/
+# * tcsh makes capturing all the output to syslog difficult, so we don't do it.
 # * We can't rely on Bash, since it's not available in FreeBSD by default.
-# * Digital Ocean has no support for FreeBSD user data yet
-# * AWS FreeBSD images take a long time to launch - 10mins+
-# * Override some config to use /usr/local for everything
 #
 
 env ASSUME_ALWAYS_YES=YES pkg bootstrap
