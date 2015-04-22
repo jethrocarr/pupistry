@@ -4,6 +4,7 @@
 require 'rubygems'
 require 'thor'
 require 'logger'
+require 'fileutils'
 require 'pupistry'
 
 # Ensure all output is real time - this is a long running process with
@@ -305,6 +306,89 @@ class CLI < Thor
     end
       
   end
+
+
+  ## Other Commands
+
+  desc "setup", "Write a template configuration file"
+  method_option :force,       :type => :boolean, :desc => "Replace an existing config file"
+  def setup
+
+    # Thor seems to force class options to be defined repeatedly? :-/
+    if options[:verbose]
+      $logger.level = Logger::DEBUG
+    else
+      $logger.level = Logger::INFO
+    end
+
+
+    # Generally we should put the Pupistry configuration into the home dir, a
+    # developer who wants it elsewhere will be capable of figuring out how to
+    # install themselves.
+    config_dest = "~/.pupistry/settings.yaml"
+
+    # If the HOME environmental hasn't been set, dump the config into CWD.
+    unless ENV['HOME']
+      config_dest = "#{Dir.pwd}/settings.yaml"
+      $logger.warn "HOME is not set, so writing configuration file into #{config_dest}"
+    end
+    
+    config_dest = File.expand_path config_dest
+
+
+    # Does a local template exist?
+    if File.exists?("#{Dir.pwd}/settings.example.yaml")
+      config_source = "#{Dir.pwd}/settings.example.yaml"
+    else
+      # Check for GEM installed location
+      begin
+        config_source = Gem::Specification.find_by_name("pupistry").gem_dir
+        config_source = "#{config_source}/settings.example.yaml"
+      rescue Gem::LoadError
+        # Yeah I dunno what you're doing...
+        $logger.error "Unable to find settings.example.yaml, seems we are not running as a Gem nor in the CWD of the app source"
+        exit 0
+      end
+    end
+
+    unless File.exists?(config_source)
+      $logger.error "Template configuration should exist in #{config_source} but no file found/readable!"
+      exit 0
+    end
+
+    # Prevent Overwrite
+    if File.exists?(config_dest)
+      unless options[:force]
+        $logger.error "Configuration file #{config_dest} already exists, if you wish to replace it please call with --force"
+        exit 0
+      else
+        $logger.warn "Overwriting #{config_dest}..."
+      end
+    end
+
+    # Copy the template configuration file to destination
+    begin
+      FileUtils.cp config_source, config_dest
+
+      $logger.info "Successfully installed configuration file into #{config_dest}"
+    rescue Exception => e
+      $logger.error "An unexpected error occured when copying #{config_source} to #{config_dest}"
+      raise e
+    end
+
+    # TODO: This is where I'd like to do things more cleverly. Currently we
+    # just tell the user to edit the configuration file, but would be really
+    # cool to write a setup wizard that helps them complete the configuration
+    # file and validates the input (eg AWS keys).
+
+    if ENV['EDITOR']
+      $logger.info "Now open the config file with `#{ENV['EDITOR']} #{config_dest}` and set your configuration values before running Pupistry."
+    else
+      $logger.info "You now need to edit #{config_dest} with your configuration values before running Pupistry."
+    end
+
+  end
+
 end
 
 CLI.start(ARGV)

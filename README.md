@@ -210,7 +210,6 @@ Alternatively if you like living on the edge, download this repository and run:
     gem install pupistry-VERSION.gem
     pupistry setup
 
-TODO: Currently setup not implemented, copy the sample file provided.
 
 ## 2. S3 Bucket
 
