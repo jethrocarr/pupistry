@@ -74,6 +74,13 @@ module Pupistry
       rescue AWS::S3::Errors::SignatureDoesNotMatch => e
         $logger.error "IAM signature error when accessing #{$config["general"]["s3_bucket"]}, probably invalid IAM credentials"
         raise e
+
+      rescue AWS::S3::Errors::MissingCredentialsError => e
+        $logger.error "AWS credentials not supplied. You must either:"
+        $logger.error "a) Specify them in the config file for Pupistry"
+        $logger.error "b) Use IAM roles with an EC2 instance."
+        $logger.error "c) Set them in ENV as AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY"
+        return false
       
       rescue Exception => e
         raise e
@@ -124,6 +131,13 @@ module Pupistry
         $logger.error "IAM signature error when accessing #{$config["general"]["s3_bucket"]}, probably invalid IAM credentials"
         raise e
 
+      rescue AWS::S3::Errors::MissingCredentialsError => e
+        $logger.error "AWS credentials not supplied. You must either:"
+        $logger.error "a) Specify them in the config file for Pupistry"
+        $logger.error "b) Use IAM roles with an EC2 instance."
+        $logger.error "c) Set them in ENV as AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY"
+        return false
+     
       rescue Exception => e
         raise e
       end
