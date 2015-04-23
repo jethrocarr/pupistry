@@ -3,6 +3,7 @@ require 'yaml'
 require 'time'
 require 'digest'
 require 'fileutils'
+require 'base64'
 
 module Pupistry
   # Pupistry::Artifact
@@ -215,9 +216,28 @@ module Pupistry
         $logger.warn "You have GPG signing *disabled*, whilst not critical it does weaken your security."
         $logger.warn "Skipping signing step..."
       else
-        $logger.info "GPG signing the artifact with configured key"
 
-        # TODO: should probably write this bit!
+        gpgsig = Pupistry::GPG.new @checksum
+
+        # Sign the artifact
+        unless gpgsig.artifact_sign
+          $logger.fatal "Unable to proceed with an unsigned artifact"
+          exit 0
+        end
+
+        # Verify the signature - we want to make sure what we've just signed
+        # can actually be validated properly :-)
+        unless gpgsig.artifact_verify
+          $logger.fatal "Whilst a signature was generated, it was unable to be validated. This would suggest a bug of some kind."
+          exit 0
+        end
+
+        # Save the signature to the manifest
+        unless gpgsig.signature_save
+          $logger.fatal "Unable to write the signature into the manifest file for the artifact."
+          exit 0
+        end
+
       end
 
 
@@ -313,7 +333,7 @@ module Pupistry
         "version"   => @checksum, 
         "date"      => Time.new.inspect,
         "builduser" => ENV['USER'] || 'unlabled',
-        "gpgsig"    => 'unsighed',
+        "gpgsig"    => 'unsigned',
       }
 
       begin
@@ -386,6 +406,22 @@ module Pupistry
       unless defined? @checksum
         raise "Application bug, trying to install no artifact"
       end
+
+      # Validate the artifact if GPG is enabled.
+      if $config["general"]["gpg_disable"] == true
+        $logger.warn "You have GPG validation *disabled*, whilst not critical it does weaken your security."
+        $logger.warn "Skipping validation step..."
+      else
+
+        gpgsig = Pupistry::GPG.new @checksum
+
+        unless gpgsig.artifact_verify
+          $logger.fatal "The GPG signature could not be validated for the artifact. This could be a bug, a file corruption or a POSSIBLE SECURITY ISSUE such as maliciously modified content."
+          raise "Fatal unexpected error"
+        end
+
+      end
+
 
       # Make sure the artifact has been unpacked
       unless Dir.exists?($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}")

@@ -12,7 +12,7 @@ exec 1> >(logger -s -t user-data) 2>&1
 rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
 
 yum update --assumeyes
-yum install --assumeyes puppet ruby-devel rubygems gcc zlib-devel libxml2-devel patch
+yum install --assumeyes puppet ruby-devel rubygems gcc zlib-devel libxml2-devel patch gnupg2
 
 gem install pupistry
 mkdir /etc/pupistry

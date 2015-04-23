@@ -20,14 +20,15 @@ servers.
 Pupistry builds on the functionality offered by the r10k workflow but rather
 than requiring the implementing of site-specific custom bootstrap and custom
 workflow mechanisms, Pupistry executes r10k, assembles the combined modules
-and then generates a compress artifact file. It then signs the artifact with
-GPG and uploads it into an Amazon S3 bucket along with a manifest file.
+and then generates a compress artifact file. It then optionally signs the
+artifact with GPG and finally uploads it into an Amazon S3 bucket along with a
+manifest file.
 
 The masterless Puppet machines then just run a Pupistry job which checks for a
 new version of the manifest file. If there is, it downloads the new artifact
-and does a GPG validation before applying it and running Puppet. To make life
-even easier, Pupistry will even spit out bootstrap files for your platform
-which sets up each server from scratch to pull and run the artifacts.
+and does an optional GPG validation before applying it and running Puppet. To
+make life even easier, Pupistry will even spit out bootstrap files for your
+platform which sets up each server from scratch to pull and run the artifacts.
 
 Essentially Pupistry is intended to be a robust solution for masterless Puppet
 deployments and makes it trivial for beginners to get started with Puppet.
@@ -342,6 +343,31 @@ and running masterless Puppet environment using Pupistry. It covers the very
 basics of setting up your r10k environment.
 
 
+# GPG Notes
+
+GPG can be a bit of a beast to setup and get used to. Pupistry tries to make
+the signing and key sharing process as simple as possible, but setting up GPG
+on your platform and creating your key is beyond the scope of this document.
+
+If you are being asked for your GPG password for every `pupistry push` even in
+rapid succession, then you may need to setup gpg-agent so it can keep you
+logged in for short durations to get a better balance of security vs usability.
+
+Currently Pupistry supports a 1:1 approach, where the key used to sign the
+artifact is the key used to verify it. Pull requests to add support for signing
+and verifying against a keyring list would be welcome to make it easier for
+teams to use GPG without having everyone with a single master key.
+
+Note that GPG isn't vital for security - you still have end-to-end transport
+security between your build machine and your servers via HTTPS/TLS to and from
+the S3 bucket, all that GPG does is prevent anyone who managed to break into
+your S3 bucket from pushing their own Puppet manifests out.
+
+Generally S3 is secure (assuming no bugs in AWS itself), any likely exploit
+would be from you accidentally sharing your IAM credentials in the wrong place,
+or an exploited build server.
+
+
 # Caveats & Future Plans
 
 ## Use r10k
@@ -442,6 +468,10 @@ issue tracker is fine, but pull requests speak louder than words. :-)
 
 If you find a bug or need support, please use the issue tracker rather than
 personal emails to the author.
+
+Feel free to grep the source for "TODO" comments on various tasks that
+need doing.
+
 
 
 # Author
