@@ -188,6 +188,9 @@ system init file gets installed that sets this daemon up for you automatically.
 
     pupistry apply --daemon
 
+Note that the daemon runs & logs to the foreground if you run it like the above,
+the init script handles the syslog & backgrounding for you (why code what the
+init system can do for us?).
 
 Alternatively, if you don't wish to use Pupistry to run the nodes, you don't
 have to. You can use Pupistry to build the artifacts and then pull them down
