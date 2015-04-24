@@ -72,6 +72,8 @@ module Pupistry
         secret_access_key: $config["agent"]["secret_access_key"],
         region: $config["agent"]["region"],
         proxy_uri: $config["agent"]["proxy_uri"],
+        daemon_frequency: $config["agent"]["daemon_frequency"],
+        daemon_minimal: $config["agent"]["daemon_minimal"]
       }
 
       # Generate template using ERB

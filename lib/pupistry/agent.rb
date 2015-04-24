@@ -1,7 +1,6 @@
 require 'rubygems'
-require 'yaml'
 require 'fileutils'
-require 'base64'
+require 'rufus/scheduler'
 
 module Pupistry
   # Pupistry::Agent
@@ -9,6 +8,61 @@ module Pupistry
   class Agent
     # Functions for running the Pupistry agent aka "apply mode" to actually
     # download and run Puppet against the contents of the artifact.
+
+
+    def self.daemon options
+      ## Run as a daemon
+
+
+      # Since options comes from Thor, it can't be modified, so we need to
+      # copy the options and then we can edit it.
+
+      options_new = options.inject({}) do |new, (name, value)| 
+        new[name] = value;
+        new 
+      end
+
+      # If the minimal mode has been enabled in config, respect.
+      if $config["agent"]["daemon_minimal"]
+        options_new[:minimal] = true
+      end
+
+      # If no frequency supplied, use 300 seconds safe default.
+      unless $config["agent"]["daemon_frequency"]
+        $config["agent"]["daemon_frequency"] = 300
+      end
+
+
+      # Use rufus-scheduler to run our apply job as a regularly scheduled job
+      # but with build in locking handling.
+      
+      $logger.info "Launching daemon... frequency of #{$config["agent"]["daemon_frequency"]} seconds."
+
+      begin
+
+        scheduler = Rufus::Scheduler.new
+
+        scheduler.every "#{$config["agent"]["daemon_frequency"]}s", :overlap => false, :timeout => '1d', :first_at => Time.now + 1 do
+          $logger.info "Triggering another Pupistry run (#{$config["agent"]["daemon_frequency"]}s)"
+          apply options_new
+        end
+
+        scheduler.join
+
+      rescue Rufus::Scheduler::TimeoutError
+        $logger.error "A run of Pupistry timed out after 1 day as a safety measure. There may be a bug or a Puppet action causing it to get stuck"
+
+      rescue SignalException => e
+        # Clean shutdown signal (eg SIGTERM)
+        $logger.info "Clean shutdown of Pupistry daemon requests"
+        exit 0
+
+      rescue Exception => e
+        raise e
+      end
+
+    end
+
 
     def self.apply options
       ## Download and apply the latest artifact (if any)
@@ -21,7 +75,7 @@ module Pupistry
 
       unless artifact.checksum
         $logger.error "There is no current artifact available for download, no steps can be taken."
-        exit 0
+        return false
       end
 
       artifact_installed = Pupistry::Artifact.new
@@ -51,7 +105,7 @@ module Pupistry
 
         unless artifact.install
           $logger.fatal "An unexpected error happened when installing the latest artifact, cancelling Puppet run"
-          exit 0
+          return false
         end
 
         # Remove temporary unpacked files
@@ -74,7 +128,7 @@ module Pupistry
         
         if options[:minimal]
           $logger.info "Running with minimal effort mode enabled, not running Puppet since artifact version already applied"
-          exit 0
+          return false
         end
 
       end
@@ -88,7 +142,7 @@ module Pupistry
 
       unless Dir.exists?("#{$config["agent"]["puppetcode"]}/#{environment}")
         $logger.fatal "The requested branch/environment of #{environment} does not exist, unable to run Puppet"
-        exit 0
+        return false
       end
 
 
@@ -108,7 +162,7 @@ module Pupistry
       $logger.debug "With: #{puppet_cmd}"
 
       unless system puppet_cmd
-        $logger.fatal "An unexpected issue occured when running puppet"
+        $logger.error "An unexpected issue occured when running puppet"
       end
 
     end

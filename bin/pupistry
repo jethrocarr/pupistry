@@ -54,14 +54,13 @@ class CLI < Thor
     end
 
 
-    # Muppet dev check
     if options[:daemon]
-      $logger.fatal "Daemon mode not implemented yet"
-      exit 0
+      # Run as a daemon service
+      Pupistry::Agent.daemon options
+    else
+      # Single-run Agent Execution
+      Pupistry::Agent.apply options
     end
-
-    # Run the agent
-    Pupistry::Agent.apply options
   end
 
 

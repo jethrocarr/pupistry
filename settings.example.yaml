@@ -47,6 +47,19 @@ agent:
   region: ap-southeast-2
   proxy_uri:
 
+  # (If Daemonised)
+  # Default is to check for a new artifact every 60 seconds, but only to
+  # actually run Puppet if there has been a change to the artifact contents.
+  # 
+  # At a polling rate of 60 seconds, the cost of S3 will be about $0.02 per
+  # month per system running Pupistry.
+  #
+  # If you want to force regular Puppet runs regardless whether or not a new
+  # artifact has been released, turn daemon_minimal off, but make sure the
+  # frequency isn't too low - 300 seconds+ recommended otherwise Puppet will
+  # be hammering your system resources.
+  daemon_frequency: 60
+  daemon_minimal: true
 
 
 # The following settings are only needed on the build machines (people building
