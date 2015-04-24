@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'pupistry'
-  s.version     = '0.0.9'
+  s.version     = '0.0.10'
   s.date        = '2015-04-24'
   s.summary     = "A workflow tool for Puppet Masterless Deployments"
   s.description = "Provides security, reliability and consistency to Puppet masterless environments"
