@@ -266,7 +266,7 @@ module Pupistry
           return false
         end
 
-        unless system "gpg --import < #{$config["general"]["app_cache"]}/artifacts/#{$config["general"]["gpg_signing_key"]}.publickey"
+        unless system "gpg --import < #{$config["general"]["app_cache"]}/artifacts/#{$config["general"]["gpg_signing_key"]}.publickey > /dev/null 2>&1"
          $logger.error "A fault occured when trying to import the GPG key"
          return false
        end
