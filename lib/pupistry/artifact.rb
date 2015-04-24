@@ -82,7 +82,22 @@ module Pupistry
         manifest = YAML::load(contents)
 
         if defined? manifest['version']
-          return manifest['version']
+          # We have a manifest version supplied, however since the manifest
+          # isn't signed, there's risk of an exploited S3 bucket replacing
+          # the version with injections designed to attack the shell commands
+          # we call from Pupistry.
+          #
+          # Therefore we need to make sure the manifest version matches a
+          # regex suitable for a checksum.
+
+          if /^[A-Za-z0-9]{32}$/.match(manifest['version'])
+            return manifest['version']
+          else
+            $logger.error "Manifest version returned from S3 manifest.latest.yaml did not match expected regex of MD5."
+            $logger.error "Possible bug or security incident, investigate with care!"
+            $logger.error "Returned version string was: \"#{manifest['version']}\""
+            exit 0
+          end
         else
           return false
         end
@@ -107,7 +122,7 @@ module Pupistry
           @checksum   = manifest['version']
         else
           $logger.error "No artifact has been built yet. You need to run pupistry build first?"
-          return 0
+          return false
         end
     end
 
@@ -118,7 +133,7 @@ module Pupistry
       # Make sure the Puppetcode install directory exists
       unless Dir.exists?($config["agent"]["puppetcode"])
         $logger.warn "The destination path of #{$config["agent"]["puppetcode"]} does not appear to exist or is not readable"
-        return 0
+        return false
       end
 
       # Look for a manifest file in the directory and read the version from it.
@@ -128,7 +143,7 @@ module Pupistry
         return manifest['version']
       else
         $logger.warn "No current version installed"
-        return 0
+        return false
       end
     end
 

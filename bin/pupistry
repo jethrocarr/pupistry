@@ -62,15 +62,24 @@ class CLI < Thor
     artifact = Pupistry::Artifact.new
     artifact.checksum = artifact.fetch_latest
 
+    unless artifact.checksum
+      $logger.error "There is no current artifact available for download, no steps can be taken."
+      exit 0
+    end
+
     artifact_installed = Pupistry::Artifact.new
     artifact_installed.checksum = artifact_installed.fetch_installed
 
+    if artifact_installed.checksum
+      $logger.debug "Currently on #{artifact_installed.checksum}"
+    else
+      $logger.debug "No currently installed artifact - blank slate!"
+    end
 
     # Download the new artifact if one has changed. If we already have this
     # version, then we should skip downloading and go straight to running
     # Puppet - unless the user runs with --force (eg to fix a corrupted
     # artifact).
-    $logger.debug "Currently on #{artifact_installed.checksum}"
     
     if artifact.checksum != artifact_installed.checksum or options[:force]
       if options[:force]
@@ -217,6 +226,11 @@ class CLI < Thor
     end
 
     artifact_current.fetch_artifact
+
+    # Are they the same version?
+    if artifact_current.checksum == artifact_upstream.checksum
+      $logger.info "Current version and upstream version are the same, no diff"
+    end
 
     # Unpack the archives
     artifact_current.unpack
