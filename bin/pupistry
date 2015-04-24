@@ -122,18 +122,24 @@ class CLI < Thor
 
     end
 
+    # Check if the requested environment/branch actually exists
+    if options[:environment]
+      environment = options[:environment]
+    else
+      environment = 'master'
+    end
+
+    unless Dir.exists?("#{$config["agent"]["puppetcode"]}/#{environment}")
+      $logger.fatal "The requested branch/environment of #{environment} does not exist, unable to run Puppet"
+      exit 0
+    end
+
 
     # Execute Puppet.
     puppet_cmd = "puppet apply"
 
     if options[:noop]
       puppet_cmd += " --noop"
-    end
-
-    if options[:environment]
-      environment = options[:environment]
-    else
-      environment = 'master'
     end
 
     puppet_cmd += " --environment #{environment}"
