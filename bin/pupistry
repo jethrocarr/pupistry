@@ -243,6 +243,11 @@ class CLI < Thor
     #
     # So given this, we might as well go native and just rely on the system
     # diff command to do the job.
+    #
+    # TODO: We need smarts here to handle git branching, so a branch doens't
+    #       produce a new mega diff, we want only the real changes to be
+    #       easily visible, or the diff function loses value to people.
+    #       Pull requests welcome :-) xoxo
     
     Dir.chdir("#{$config["general"]["app_cache"]}/artifacts/") do
       unless system "diff -Nuar unpacked.#{artifact_upstream.checksum} unpacked.#{artifact_current.checksum}"
