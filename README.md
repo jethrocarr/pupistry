@@ -481,7 +481,8 @@ If you find a bug or need support, please use the issue tracker rather than
 personal emails to the author.
 
 Feel free to grep the source for "TODO" comments on various tasks that
-need doing.
+need doing, or check out the issuer tracker for interesting issues to
+tackle.
 
 
 
