@@ -259,16 +259,19 @@ will do the trick:
      - "nodes/%{::hostname}"
      - common
 
-Then in Pupistry, the following configuration should be used for the agent (or
-subsitute `/etc/puppet/` for wherever your platform has `%{::settings::confdir}`
-set to).
+Pupistry will override the default `%{::settings::confdir}` value with wherever
+the Pupistry agent has been configured to write to (by default this will be the
+Puppet-4 style `/etc/puppetlabs/code/environments` path) so this Hiera config
+should work fine for any Pupistry deployed setups.
 
-      agent:
-        puppetcode: /etc/puppet/environments
+If you're using a hybrid of Pupistry and masterful Puppet, you may need to adjust
+the `datadir` parameter in Hiera to a fixed path and the `puppetcode` parameter
+in Pupistry to be the exact same value, since `%{::settings::confdir}` will
+differ between Pupistry and masterful Puppet.
 
 Pupistry will default to applying the "master" branch if one is not listed, if
 you are doing branch-based environments, you can specifiy when bootstrapping
-and override on a per-execution basis.
+and override on a per-execution basis with `--environment`.
 
 You'll notice pretty quickly if something is broken when doing `pupistry apply`
 
