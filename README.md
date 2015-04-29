@@ -253,7 +253,7 @@ will do the trick:
     ---
     :backends: yaml
     :yaml:
-      :datadir: "%{::settings::confdir}/environments/%{::environment}/hieradata"
+      :datadir: "%{::settings::confdir}/%{::environment}/hieradata"
     :hierarchy:
      - "environments/%{::environment}"
      - "nodes/%{::hostname}"
@@ -277,7 +277,6 @@ You can copy this and start your own Puppet adventure, just add in your modules
 to Puppetfile and add them to the relevent machines in manifests/site.pp.
 
 https://github.com/jethrocarr/pupistry-samplepuppet 
-
 
 TODO: Longer term intend to add support for various popular structure, but
 for now it is what it is. It's not hard, check out bin/puppistry and send
@@ -304,6 +303,12 @@ Puppetfile:
     # Install the Pupistry companion module
     mod 'jethrocarr/pupistry'
 
+And include the pupistry module in all your systems:
+
+    node default {
+      include pupistry
+      ...
+    }
 
 
 ## 4. Building you first node (Bootstrapping)

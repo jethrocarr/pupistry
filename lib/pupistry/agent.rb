@@ -154,6 +154,7 @@ module Pupistry
       end
 
       puppet_cmd += " --environment #{environment}"
+      puppet_cmd += " --confdir #{$config["agent"]["puppetcode"]}"
       puppet_cmd += " --modulepath #{$config["agent"]["puppetcode"]}/#{environment}/modules/"
       puppet_cmd += " --hiera_config #{$config["agent"]["puppetcode"]}/#{environment}/hiera.yaml"
       puppet_cmd += " #{$config["agent"]["puppetcode"]}/#{environment}/manifests/site.pp"
