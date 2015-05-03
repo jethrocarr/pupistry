@@ -249,6 +249,8 @@ http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-set-up.html
 Provided that you've setup `aws` correctly and have full permissions to your
 account, you can now build your S3 bucket and IAM users with:
 
+    wget https://raw.githubusercontent.com/jethrocarr/pupistry/master/resources/aws/cfn_pupistry_bucket_and_iam.template
+
     aws cloudformation create-stack \
     --capabilities CAPABILITY_IAM \
     --template-body file://cfn_pupistry_bucket_and_iam.template \
