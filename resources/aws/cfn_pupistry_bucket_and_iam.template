@@ -1,0 +1,173 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Pupistry S3 bucket and IAM users for both read (servers) and write (build workstation) roles. Note that deleting the stack will fail if the bucket is not empty.",
+
+  "Parameters" : {
+    "S3BucketName": {
+      "Type": "String",
+      "Description" : "Globally unique name of the S3 bucket to create",
+      "Default" : "AWS::StackName"
+    },
+    "S3BucketArchive": {
+      "Type": "Number",
+      "Description" : "Archive old artifacts in the S3 bucket to Glacier after specified number of days.",
+      "Default" : "30"
+    },
+    "S3BucketPurge": {
+      "Type": "Number",
+      "Description" : "Permanently delete old artifacts after specified number of days.",
+      "Default" : "365"
+    }
+
+  },
+
+  "Conditions" : {
+    "UseStackNameForBucket" : {
+      "Fn::Equals": [
+        {"Ref": "S3BucketName"},
+        "AWS::StackName"
+      ]
+    }
+  },
+
+
+  "Resources" : {
+
+    "S3Bucket" : {
+      "Type" : "AWS::S3::Bucket",
+      "Properties" : {
+        "BucketName" : {
+          "Fn::If" : [
+            "UseStackNameForBucket",
+            { "Ref" : "AWS::StackName" },
+            { "Ref" : "S3BucketName" }
+          ]
+        },
+        "AccessControl" : "Private",
+        "LifecycleConfiguration" : {
+	  "Rules" : [{
+	    "Status": "Enabled",
+            "ExpirationInDays": { "Ref" : "S3BucketPurge" },
+            "Transition": {
+              "StorageClass": "Glacier",
+              "TransitionInDays": { "Ref" : "S3BucketArchive" }
+	    }
+          }]
+        }
+      },
+      "DeletionPolicy" : "Delete"
+    },
+
+    "IAMReadOnly" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "Policies" : [{
+          "PolicyName" : "S3BucketReadOnly",
+          "PolicyDocument" : {
+             "Statement":[
+                {
+                   "Effect":"Allow",
+                   "Action":[
+                      "s3:ListAllMyBuckets"
+                   ],
+                   "Resource": [{ "Fn::Join" : ["", [ "arn:aws:s3:::", { "Ref" : "S3Bucket" } ] ] }]
+                },
+                {
+                   "Effect":"Allow",
+                   "Action":[
+                      "s3:ListBucket",
+                      "s3:GetBucketLocation"
+                   ],
+                   "Resource": [{ "Fn::Join" : ["", [ "arn:aws:s3:::", { "Ref" : "S3Bucket" } ] ] }]
+                },
+                {
+                   "Effect":"Allow",
+                   "Action":[
+                      "s3:GetObject"
+                   ],
+                   "Resource": [{ "Fn::Join" : ["", [ "arn:aws:s3:::", { "Ref" : "S3Bucket" } , "/*" ] ] }]
+                }
+             ]
+          }
+        }]
+      }
+    },
+
+    "IAMReadOnlyKeys" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : { "Ref": "IAMReadOnly" }
+      }
+    },
+
+    "IAMReadWrite" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "Policies" : [{
+          "PolicyName" : "S3BucketReadAndAppend",
+          "PolicyDocument" : {
+             "Statement":[
+                {
+                   "Effect":"Allow",
+                   "Action":[
+                      "s3:ListAllMyBuckets"
+                   ],
+                   "Resource": [{ "Fn::Join" : ["", [ "arn:aws:s3:::", { "Ref" : "S3Bucket" } ] ] }]
+                },
+                {
+                   "Effect":"Allow",
+                   "Action":[
+                      "s3:ListBucket",
+                      "s3:GetBucketLocation"
+                   ],
+                   "Resource": [{ "Fn::Join" : ["", [ "arn:aws:s3:::", { "Ref" : "S3Bucket" } ] ] }]
+                },
+                {
+                   "Effect":"Allow",
+                   "Action":[
+                      "s3:PutObject",
+                      "s3:GetObject"
+                   ],
+                   "Resource": [{ "Fn::Join" : ["", [ "arn:aws:s3:::", { "Ref" : "S3Bucket" } , "/*" ] ] }]
+                }
+             ]
+          }
+        }]
+      }
+    },
+
+    "IAMReadWriteKeys" : {
+      "Type" : "AWS::IAM::AccessKey",
+      "Properties" : {
+        "UserName" : { "Ref": "IAMReadWrite" }
+      }
+    }
+
+
+  },
+
+  "Outputs" : {
+    "S3Bucket" : {
+      "Value" : { "Ref" : "S3Bucket" },
+      "Description" : "Name of the S3 bucket for Pupistry artifacts"
+    },
+    "AgentAccessKeyId" : {
+      "Value" : { "Ref" : "IAMReadOnlyKeys" },
+      "Description" : "AWSAccessKeyId of the read-only IAM user account for use by agents."
+    },
+    "AgentSecretKeyID" : {
+      "Value" : { "Fn::GetAtt" : ["IAMReadOnlyKeys", "SecretAccessKey"] },
+      "Description" : "AWSSecretAccessKey of the read-only IAM user account for use by agents."
+    },
+    "BuildAccessKeyId" : {
+      "Value" : { "Ref" : "IAMReadWriteKeys" },
+      "Description" : "AWSAccessKeyId of the read-write (append-only) IAM user account for use by build workstations."
+    },
+    "BuildSecretKeyID" : {
+      "Value" : { "Fn::GetAtt" : ["IAMReadWriteKeys", "SecretAccessKey"] },
+      "Description" : "AWSSecretAccessKey of the read-write (append-only) IAM user account for use by build workstations."
+    }
+
+  } 
+}

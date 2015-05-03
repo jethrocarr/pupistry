@@ -214,6 +214,9 @@ Alternatively if you like living on the edge, download this repository and run:
     gem install pupistry-VERSION.gem
     pupistry setup
 
+Pupistry will write an example config file into `~/.pupistry/settings.yaml` for
+you.
+
 
 ## 2. S3 Bucket
 
@@ -230,7 +233,53 @@ workstation should be permitted to write new artifacts. IE, don't share your
 AWS root account around the place. :-)
 
 Note that if you're running EC2 instances and using IAM roles, you can avoid
-needing to create explicit IAM credentials for the agents/servers.
+needing to create explicit IAM credentials for the agents/servers, as long as
+you include read access to the Pupistry S3 bucket in the IAM roles for all
+servers that will be running it.
+
+
+If you're new to AWS, we've made your life easy - there's an AWS CloudFormation
+template included with Pupistry that will build an S3 bucket and two IAM user
+accounts for you with sensible default policies.
+
+Just make sure you have a working `aws` command - that's the Python CLI issued
+by AWS themselves setup instructions can be found at:
+http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-set-up.html
+
+Provided that you've setup `aws` correctly and have full permissions to your
+account, you can now build your S3 bucket and IAM users with:
+
+    aws cloudformation create-stack \
+    --capabilities CAPABILITY_IAM \
+    --template-body file://cfn_pupistry_bucket_and_iam.template \
+    --stack-name pupistry-resources-changeme
+
+It is *very important* that you change the stack name to something globally
+unique, or the stack will fail to build.
+
+It may take 30 seconds or so to build, you can check for completion (or for an
+error) with:
+
+    aws cloudformation describe-stacks --query "Stacks[*].StackStatus" --stack-name pupistry-resources-changeme
+
+Once status is CREATE_COMPLETE, you can get all the outputs from the stack with:
+
+    aws cloudformation describe-stacks --query "Stacks[*].Outputs[*]" --stack-name pupistry-resources
+
+You now need to edit `~/.pupistry/settings.yaml` and enter in the equalivent
+OutputValue for the following labels:
+
+    general:
+      s3_bucket: S3Bucket
+    ...
+    agent:
+      access_key_id: AgentAccessKeyId
+      secret_access_key: AgentSecretKeyID
+    ...
+    build:
+      access_key_id: BuildAccessKeyId
+      secret_access_key: BuildSecretKeyID
+    ...
 
 
 
