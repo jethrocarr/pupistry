@@ -488,6 +488,7 @@ module Pupistry
             FileUtils.rm_r Dir.glob($config["agent"]["puppetcode"] + "/*"), :secure => true
           else
             FileUtils.mkdir_p $config["agent"]["puppetcode"]
+            FileUtils.chmod(0700, $config["agent"]["puppetcode"])
           end
 
           return true

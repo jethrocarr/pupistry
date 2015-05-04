@@ -27,6 +27,7 @@ module Pupistry
       unless Dir.exists?($config["general"]["app_cache"])
         begin
           FileUtils.mkdir_p($config["general"]["app_cache"])
+          FileUtils.chmod(0700, $config["general"]["app_cache"]) # Generally only the user running Pupistry should have access
         rescue Exception => e
           $logger.fatal "Unable to create cache directory at \"#{$config["general"]["app_cache"]}\"."
           raise e
