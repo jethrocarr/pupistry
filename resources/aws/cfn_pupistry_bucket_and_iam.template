@@ -148,6 +148,10 @@
   },
 
   "Outputs" : {
+    "S3Region" : {
+      "Value" : { "Ref" : "AWS::Region" },
+      "Description" : "Region where the S3 bucket is located."
+    },
     "S3Bucket" : {
       "Value" : { "Ref" : "S3Bucket" },
       "Description" : "Name of the S3 bucket for Pupistry artifacts"

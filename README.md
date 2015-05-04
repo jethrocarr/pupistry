@@ -277,10 +277,12 @@ OutputValue for the following labels:
     agent:
       access_key_id: AgentAccessKeyId
       secret_access_key: AgentSecretKeyID
+      region: S3Region
     ...
     build:
       access_key_id: BuildAccessKeyId
       secret_access_key: BuildSecretKeyID
+      region: S3Region
     ...
 
 
