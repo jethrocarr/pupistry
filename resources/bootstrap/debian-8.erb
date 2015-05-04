@@ -16,7 +16,8 @@ apt-get -y upgrade
 apt-get install -y puppet ruby ruby-dev zlib1g-dev libxml2-dev gcc make patch gnupg2
 
 gem install pupistry
-mkdir /etc/pupistry
+mkdir -p /etc/pupistry
+mkdir -p <%= puppetcode %>
 cat > /etc/pupistry/settings.yaml << "EOF"
 general:
   app_cache: ~/.pupistry/cache
@@ -33,6 +34,8 @@ agent:
   daemon_frequency: <%= daemon_frequency %>
   daemon_minimal: <%= daemon_minimal %>
 EOF
+chmod 700 /etc/pupistry/settings.yaml
+chmod 700 <%= puppetcode %>
 pupistry apply --verbose
 
 )

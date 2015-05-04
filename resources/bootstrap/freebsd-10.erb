@@ -17,7 +17,8 @@ env ASSUME_ALWAYS_YES=YES pkg upgrade --yes
 env ASSUME_ALWAYS_YES=YES pkg install --yes ruby devel/ruby-gems puppet gnupg
 
 /usr/local/bin/gem install pupistry
-mkdir /usr/local/etc/pupistry
+mkdir -p /usr/local/etc/pupistry
+mkdir -p /usr/local/etc/puppetlabs/code/environments
 cat > /usr/local/etc/pupistry/settings.yaml << EOF
 general:
   app_cache: ~/.pupistry/cache
@@ -34,5 +35,7 @@ agent:
   daemon_frequency: <%= daemon_frequency %>
   daemon_minimal: <%= daemon_minimal %>
 EOF
+chmod 700 /usr/local/etc/pupistry
+chmod 700 /usr/local/etc/puppetlabs/code/environments
 pupistry apply --verbose
 

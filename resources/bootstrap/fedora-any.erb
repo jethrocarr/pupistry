@@ -17,7 +17,8 @@ yum update --assumeyes
 yum install --assumeyes puppet ruby-devel rubygems gcc zlib-devel libxml2-devel patch gnupg2
 
 gem install pupistry
-mkdir /etc/pupistry
+mkdir -p /etc/pupistry
+mkdir -p <%= puppetcode %>
 cat > /etc/pupistry/settings.yaml << "EOF"
 general:
   app_cache: ~/.pupistry/cache
@@ -34,6 +35,8 @@ agent:
   daemon_frequency: <%= daemon_frequency %>
   daemon_minimal: <%= daemon_minimal %>
 EOF
+chmod 700 /etc/pupistry/settings.yaml
+chmod 700 <%= puppetcode %>
 pupistry apply --verbose
 
 )
