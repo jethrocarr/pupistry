@@ -267,6 +267,10 @@ class CLI < Thor
     
     config_dest = File.expand_path config_dest
 
+    # Make sure the directory exists
+    unless Dir.exists?(File.dirname(config_dest))
+      FileUtils.mkdir_p(File.dirname(config_dest))
+    end
 
     # Does a local template exist?
     if File.exists?("#{Dir.pwd}/settings.example.yaml")
