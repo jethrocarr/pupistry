@@ -59,6 +59,10 @@ artifacts) then it will fail to delete. Make sure you delete all items from
 the S3 bucket first, then delete the stack. This is generally considered a
 useful safety feature. ;-)
 
+You can delete all items with:
+
+     aws s3 rm --recursive s3://pupistry-resources-changeme
+
 
 ## Developer Notes
 
