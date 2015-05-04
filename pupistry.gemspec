@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.description = "Provides security, reliability and consistency to Puppet masterless environments"
   s.authors     = ["Jethro Carr"]
   s.email       = 'jethro.carr@jethrocarr.com'
-  s.files       = Dir['bin/*'] + Dir['lib/*'] + Dir['lib/pupistry/*'] + ["README.md"] + ["settings.example.yaml"]
+  s.files       = Dir['bin/*'] + Dir['lib/*'] + Dir['lib/pupistry/*'] + Dir['resources/*'] + Dir['resources/aws/*'] + Dir['resources/bootstrap/*'] + ["README.md"] + ["settings.example.yaml"]
   s.executables = ["pupistry"]
   s.homepage    = 'https://github.com/jethrocarr/pupistry'
   s.license     = 'Apache'
