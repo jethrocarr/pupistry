@@ -1,15 +1,3 @@
-# WORK IN PROGRESS
-
-This project is currently in progress and not all of this documentation reflects
-where it is really at. Use this at your own peril/madness. In theory, everything
-currently works, but there will be bugs and areas of the documentation that may
-not make sense.
-
-I've marked anything I can that is in progress with TODO and workarounds/notes
-where I can. It's all under development ATM so it's changing really fast, but
-I'll happily take pull requests at even this early stage.
-
-
 # pupistry
 
 Pupistry (puppet + artistry) is a solution for implementing reliable and secure
@@ -215,7 +203,7 @@ Alternatively if you like living on the edge, download this repository and run:
     pupistry setup
 
 Pupistry will write an example config file into `~/.pupistry/settings.yaml` for
-you.
+you, you will need to edit it with your preferred editor.
 
 
 ## 2. S3 Bucket
@@ -266,7 +254,7 @@ error) with:
 
 Once status is CREATE_COMPLETE, you can get all the outputs from the stack with:
 
-    aws cloudformation describe-stacks --query "Stacks[*].Outputs[*]" --stack-name pupistry-resources
+    aws cloudformation describe-stacks --query "Stacks[*].Outputs[*]" --stack-name pupistry-resources-changeme
 
 You now need to edit `~/.pupistry/settings.yaml` and enter in the equalivent
 OutputValue for the following labels:
@@ -400,7 +388,7 @@ third parties other than your VM provider and AWS S3.
 If you're looking for a more complete introduction to doing masterless Puppet
 and want to use Pupistry, check out a tutorial by the author:
 
-TUTORIAL LINK HERE
+https://www.jethrocarr.com/2015/05/10/setting-up-and-using-pupistry
 
 By following this tutorial you can go from nothing, to having a complete up
 and running masterless Puppet environment using Pupistry. It covers the very
