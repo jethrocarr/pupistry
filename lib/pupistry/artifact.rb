@@ -1,3 +1,4 @@
+# rubocop:disable Style/Documentation, Style/GlobalVars
 require 'rubygems'
 require 'yaml'
 require 'time'
@@ -12,13 +13,12 @@ module Pupistry
     # All the functions needed for manipulating the artifats
     attr_accessor :checksum
 
-
     def fetch_r10k
-      $logger.info "Using r10k utility to fetch the latest Puppet code"
+      $logger.info 'Using r10k utility to fetch the latest Puppet code'
 
-      unless defined? $config["build"]["puppetcode"]
-        $logger.fatal "You must configure the build:puppetcode config option in settings.yaml"
-        raise "Invalid Configuration"
+      unless defined? $config['build']['puppetcode']
+        $logger.fatal 'You must configure the build:puppetcode config option in settings.yaml'
+        fail 'Invalid Configuration'
       end
 
       # https://github.com/puppetlabs/r10k
@@ -33,53 +33,50 @@ module Pupistry
       # doable and much more polished approach. For now the MVP is to just run
       # it via system, pull requests/patches to fix very welcome!
 
-
       # Build the r10k config to instruct it to use our cache path for storing
       # it's data and exporting the finished result.
-      $logger.debug "Generating an r10k configuration file..."
+      $logger.debug 'Generating an r10k configuration file...'
       r10k_config = {
-        "cachedir" => "#{$config["general"]["app_cache"]}/r10kcache",
-        "sources"  => {
-          "puppet" => {
-            "remote"  => $config["build"]["puppetcode"],
-            "basedir" => $config["general"]["app_cache"] + "/puppetcode",
+        'cachedir' => "#{$config['general']['app_cache']}/r10kcache",
+        'sources'  => {
+          'puppet' => {
+            'remote'  => $config['build']['puppetcode'],
+            'basedir' => $config['general']['app_cache'] + '/puppetcode'
           }
         }
       }
 
       begin
-        File.open("#{$config["general"]["app_cache"]}/r10kconfig.yaml",'w') do |fh|
-          fh.write YAML::dump(r10k_config)
+        File.open("#{$config['general']['app_cache']}/r10kconfig.yaml", 'w') do |fh|
+          fh.write YAML.dump(r10k_config)
         end
-      rescue Exception => e
-        $logger.fatal "Unexpected error when trying to write the r10k configuration file"
+      rescue StandardError => e
+        $logger.fatal 'Unexpected error when trying to write the r10k configuration file'
         raise e
       end
 
-      
       # Execute R10k with the provided configuration
-      $logger.debug "Executing r10k"
+      $logger.debug 'Executing r10k'
 
-      if system "r10k deploy environment -c #{$config["general"]["app_cache"]}/r10kconfig.yaml -pv debug"
-        $logger.info "r10k run completed"
+      if system "r10k deploy environment -c #{$config['general']['app_cache']}/r10kconfig.yaml -pv debug"
+        $logger.info 'r10k run completed'
       else
-        $logger.error "r10k run failed, unable to generate artifact"
-        raise "r10k run did not complete, unable to generate artifact"
+        $logger.error 'r10k run failed, unable to generate artifact'
+        fail 'r10k run did not complete, unable to generate artifact'
       end
-
     end
 
     def fetch_latest
       # Fetch the latest S3 YAML file and check the version metadata without writing
       # it to disk. Returns the version. Useful for quickly checking for updates :-)
 
-      $logger.debug "Checking latest artifact version..."
+      $logger.debug 'Checking latest artifact version...'
 
       s3        = Pupistry::Storage_AWS.new 'agent'
       contents  = s3.download 'manifest.latest.yaml'
 
       if contents
-        manifest = YAML::load(contents)
+        manifest = YAML.load(contents)
 
         if defined? manifest['version']
           # We have a manifest version supplied, however since the manifest
@@ -93,8 +90,8 @@ module Pupistry
           if /^[A-Za-z0-9]{32}$/.match(manifest['version'])
             return manifest['version']
           else
-            $logger.error "Manifest version returned from S3 manifest.latest.yaml did not match expected regex of MD5."
-            $logger.error "Possible bug or security incident, investigate with care!"
+            $logger.error 'Manifest version returned from S3 manifest.latest.yaml did not match expected regex of MD5.'
+            $logger.error 'Possible bug or security incident, investigate with care!'
             $logger.error "Returned version string was: \"#{manifest['version']}\""
             exit 0
           end
@@ -106,10 +103,7 @@ module Pupistry
         # download did not work
         return false
       end
-
-
     end
-
 
     def fetch_current
       # Fetch the latest on-disk YAML file and check the version metadata, used
@@ -117,39 +111,36 @@ module Pupistry
       # Returns the version.
 
       # Read the symlink information to get the latest version
-      if File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.latest.yaml")
-          manifest    = YAML::load(File.open($config["general"]["app_cache"] + "/artifacts/manifest.latest.yaml"))
-          @checksum   = manifest['version']
-        else
-          $logger.error "No artifact has been built yet. You need to run pupistry build first?"
-          return false
-        end
+      if File.exist?($config['general']['app_cache'] + '/artifacts/manifest.latest.yaml')
+        manifest    = YAML.load(File.open($config['general']['app_cache'] + '/artifacts/manifest.latest.yaml'))
+        @checksum   = manifest['version']
+      else
+        $logger.error 'No artifact has been built yet. You need to run pupistry build first?'
+        return false
+      end
     end
-
 
     def fetch_installed
       # Fetch the current version that is installed.
-      
+
       # Make sure the Puppetcode install directory exists
-      unless Dir.exists?($config["agent"]["puppetcode"])
-        $logger.warn "The destination path of #{$config["agent"]["puppetcode"]} does not appear to exist or is not readable"
+      unless Dir.exist?($config['agent']['puppetcode'])
+        $logger.warn "The destination path of #{$config['agent']['puppetcode']} does not appear to exist or is not readable"
         return false
       end
 
       # Look for a manifest file in the directory and read the version from it.
-      if File.exists?($config["agent"]["puppetcode"] + "/manifest.pupistry.yaml")
-        manifest = YAML::load(File.open($config["agent"]["puppetcode"] + "/manifest.pupistry.yaml"))
+      if File.exist?($config['agent']['puppetcode'] + '/manifest.pupistry.yaml')
+        manifest = YAML.load(File.open($config['agent']['puppetcode'] + '/manifest.pupistry.yaml'))
 
         return manifest['version']
       else
-        $logger.warn "No current version installed"
+        $logger.warn 'No current version installed'
         return false
       end
     end
 
-
     def fetch_artifact
-
       # Figure out which version to fetch (if not explicitly defined)
       if defined? @checksum
         $logger.debug "Downloading artifact version #{@checksum}"
@@ -159,36 +150,31 @@ module Pupistry
         if defined? @checksum
           $logger.debug "Downloading latest artifact (#{@checksum})"
         else
-          $logger.error "There is not current artifact that can be fetched"
+          $logger.error 'There is not current artifact that can be fetched'
           return false
         end
 
       end
 
       # Make sure the download dir/cache exists
-      unless Dir.exists?($config["general"]["app_cache"] + "/artifacts/")
-        FileUtils.mkdir_p $config["general"]["app_cache"] + "/artifacts/"
-      end
+      FileUtils.mkdir_p $config['general']['app_cache'] + '/artifacts/' unless Dir.exist?($config['general']['app_cache'] + '/artifacts/')
 
       # Download files if they don't already exist
-      if File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml") and File.exists?($config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz")
-        $logger.debug "This artifact is already present, no download required."
+      if File.exist?($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml") &&
+         File.exist?($config['general']['app_cache'] + "/artifacts/artifact.#{@checksum}.tar.gz")
+        $logger.debug 'This artifact is already present, no download required.'
       else
         s3 = Pupistry::Storage_AWS.new 'agent'
-        s3.download "manifest.#{@checksum}.yaml", $config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml"
-        s3.download "artifact.#{@checksum}.tar.gz", $config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz"
+        s3.download "manifest.#{@checksum}.yaml", $config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml"
+        s3.download "artifact.#{@checksum}.tar.gz", $config['general']['app_cache'] + "/artifacts/artifact.#{@checksum}.tar.gz"
       end
-
     end
-
-
 
     def push_artifact
       # The push step involves 2 steps:
       # 1. GPG sign the artifact and write it into the manifest file
       # 2. Upload the manifest and archive files to S3.
       # 3. Upload a copy as the "latest" manifest file which will be hit by clients.
-
 
       # Determine which version we are uploading. Either one specifically
       # selected, otherwise find the latest one to push
@@ -206,65 +192,60 @@ module Pupistry
         end
       end
 
-
       # Do we even need to upload? If nothing has changed....
       if @checksum == fetch_latest
         $logger.error "You've already pushed this artifact version, nothing to do."
         exit 0
       end
 
-
       # Make sure the files actually exist...
-      unless File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml")
+      unless File.exist?($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml")
         $logger.error "The files expected for #{@checksum} do not appear to exist or are not readable"
-        raise "Fatal unexpected error"
+        fail 'Fatal unexpected error'
       end
 
-      unless File.exists?($config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz")
+      unless File.exist?($config['general']['app_cache'] + "/artifacts/artifact.#{@checksum}.tar.gz")
         $logger.error "The files expected for #{@checksum} do not appear to exist or are not readable"
-        raise "Fatal unexpected error"
+        fail 'Fatal unexpected error'
       end
-
 
       # GPG sign the files
-      if $config["general"]["gpg_disable"] == true
-        $logger.warn "You have GPG signing *disabled*, whilst not critical it does weaken your security."
-        $logger.warn "Skipping signing step..."
+      if $config['general']['gpg_disable'] == true
+        $logger.warn 'You have GPG signing *disabled*, whilst not critical it does weaken your security.'
+        $logger.warn 'Skipping signing step...'
       else
 
         gpgsig = Pupistry::GPG.new @checksum
 
         # Sign the artifact
         unless gpgsig.artifact_sign
-          $logger.fatal "Unable to proceed with an unsigned artifact"
+          $logger.fatal 'Unable to proceed with an unsigned artifact'
           exit 0
         end
 
         # Verify the signature - we want to make sure what we've just signed
         # can actually be validated properly :-)
         unless gpgsig.artifact_verify
-          $logger.fatal "Whilst a signature was generated, it was unable to be validated. This would suggest a bug of some kind."
+          $logger.fatal 'Whilst a signature was generated, it was unable to be validated. This would suggest a bug of some kind.'
           exit 0
         end
 
         # Save the signature to the manifest
         unless gpgsig.signature_save
-          $logger.fatal "Unable to write the signature into the manifest file for the artifact."
+          $logger.fatal 'Unable to write the signature into the manifest file for the artifact.'
           exit 0
         end
 
       end
 
-
-      # Upload the artifact & manifests to S3. We also make an additional copy 
+      # Upload the artifact & manifests to S3. We also make an additional copy
       # as the "latest" file which will be downloaded by all the agents checking
       # for new updates.
 
       s3 = Pupistry::Storage_AWS.new 'build'
-      s3.upload $config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz", "artifact.#{@checksum}.tar.gz"
-      s3.upload $config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml", "manifest.#{@checksum}.yaml"
-      s3.upload $config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml", "manifest.latest.yaml"
-
+      s3.upload $config['general']['app_cache'] + "/artifacts/artifact.#{@checksum}.tar.gz", "artifact.#{@checksum}.tar.gz"
+      s3.upload $config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml", "manifest.#{@checksum}.yaml"
+      s3.upload $config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml", 'manifest.latest.yaml'
 
       # Test a read of the manifest, we do this to make sure the S3 ACLs setup
       # allow downloading of the uploaded files - helps avoid user headaches if
@@ -273,7 +254,7 @@ module Pupistry
       # Only worth doing this step if they've explicitly set their AWS IAM credentials
       # for the agent, which should be everyone except for IAM role users.
 
-      if $config["agent"]["access_key_id"]
+      if $config['agent']['access_key_id']
         fetch_artifact
       else
         $logger.warn "The agent's AWS credentials are unset on this machine, unable to do download test to check permissions for you."
@@ -282,7 +263,6 @@ module Pupistry
 
       $logger.info "Upload of artifact version #{@checksum} completed and is now latest"
     end
-    
 
     def build_artifact
       # r10k has done all the heavy lifting for us, we just need to generate a
@@ -292,10 +272,9 @@ module Pupistry
       # the file. Like r10k, if you want to convert to a nicely polished native
       # Ruby solution, patches welcome.
 
-      $logger.info "Creating artifact..."
+      $logger.info 'Creating artifact...'
 
-      Dir.chdir($config["general"]["app_cache"]) do
-
+      Dir.chdir($config['general']['app_cache']) do
         # Make sure there is a directory to write artifacts into
         FileUtils.mkdir_p('artifacts')
 
@@ -303,94 +282,93 @@ module Pupistry
         # so that we can grab the checksum, since checksum will always differ
         # post-compression.
         unless system "tar -c --exclude '.git' -f artifacts/artifact.temp.tar puppetcode/*"
-          $logger.error "Unable to create tarball"
-          raise "An unexpected error occured when executing tar"
+          $logger.error 'Unable to create tarball'
+          fail 'An unexpected error occured when executing tar'
         end
 
         # The checksum is important, we use it as our version for each artifact
         # so we can tell them apart in a unique way.
-        @checksum = Digest::MD5.file($config["general"]["app_cache"] + "/artifacts/artifact.temp.tar").hexdigest
+        @checksum = Digest::MD5.file($config['general']['app_cache'] + '/artifacts/artifact.temp.tar').hexdigest
 
         # Now we have the checksum, check if it's the same as any existing
         # artifacts. If so, drop out here, good to give feedback to the user
         # if nothing has changed since it's easy to forget to git push a single
         # module/change.
 
-        if File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml")
+        if File.exists($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml")
           $logger.error "This artifact version (#{@checksum}) has already been built, nothing todo."
           $logger.error "Did you remember to \"git push\" your module changes?"
 
           # Cleanup temp file
-          FileUtils.rm($config["general"]["app_cache"] + "/artifacts/artifact.temp.tar")
+          FileUtils.rm($config['general']['app_cache'] + '/artifacts/artifact.temp.tar')
           exit 0
         end
 
         # Compress the artifact now that we have taken it's checksum
-        $logger.info "Compressing artifact..."
+        $logger.info 'Compressing artifact...'
 
-        if system "gzip artifacts/artifact.temp.tar"
+        if system 'gzip artifacts/artifact.temp.tar'
         else
-          $logger.error "An unexpected error occured during compression of the artifact"
-          raise "An unexpected error occured during compression of the artifact"
+          $logger.error 'An unexpected error occured during compression of the artifact'
+          fail 'An unexpected error occured during compression of the artifact'
         end
       end
 
-
       # We have the checksum, so we can now rename the artifact file
-      FileUtils.mv($config["general"]["app_cache"] + "/artifacts/artifact.temp.tar.gz", $config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz")
+      FileUtils.mv($config['general']['app_cache'] + '/artifacts/artifact.temp.tar.gz',
+                   $config['general']['app_cache'] + "/artifacts/artifact.#{@checksum}.tar.gz")
 
-
-      $logger.info "Building manifest information for artifact..."
+      $logger.info 'Building manifest information for artifact...'
 
       # Create the manifest file, this is used by clients for pulling details about
       # the latest artifacts. We don't GPG sign here, but we do put in a placeholder.
       manifest = {
-        "version"   => @checksum, 
-        "date"      => Time.new.inspect,
-        "builduser" => ENV['USER'] || 'unlabled',
-        "gpgsig"    => 'unsigned',
+        'version'   => @checksum,
+        'date'      => Time.new.inspect,
+        'builduser' => ENV['USER'] || 'unlabled',
+        'gpgsig'    => 'unsigned'
       }
 
       begin
-        File.open("#{$config["general"]["app_cache"]}/artifacts/manifest.#{@checksum}.yaml",'w') do |fh|
-          fh.write YAML::dump(manifest)
+        File.open("#{$config['general']['app_cache']}/artifacts/manifest.#{@checksum}.yaml", 'w') do |fh|
+          fh.write YAML.dump(manifest)
         end
-      rescue Exception => e
-        $logger.fatal "Unexpected error when trying to write the manifest file"
+      rescue StandardError => e
+        $logger.fatal 'Unexpected error when trying to write the manifest file'
         raise e
       end
 
       # This is the latest artifact, create some symlinks pointing the latest to it
       begin
-        FileUtils.ln_s("manifest.#{@checksum}.yaml", "#{$config["general"]["app_cache"]}/artifacts/manifest.latest.yaml", :force => true)
-        FileUtils.ln_s("artifact.#{@checksum}.tar.gz",  "#{$config["general"]["app_cache"]}/artifacts/artifact.latest.tar.gz",  :force => true)
-      rescue Exception => e
-        $logger.fatal "Something weird went really wrong trying to symlink the latest artifacts"
+        FileUtils.ln_s("manifest.#{@checksum}.yaml",
+                       "#{$config['general']['app_cache']}/artifacts/manifest.latest.yaml",
+                       force: true)
+        FileUtils.ln_s("artifact.#{@checksum}.tar.gz",
+                       "#{$config['general']['app_cache']}/artifacts/artifact.latest.tar.gz",
+                       force: true)
+      rescue StandardError => e
+        $logger.fatal 'Something weird went really wrong trying to symlink the latest artifacts'
         raise e
       end
-
 
       $logger.info "New artifact version #{@checksum} ready for pushing"
     end
 
-
     def unpack
       # Unpack the currently selected artifact to the archives directory.
-    
+
       # An application version must be specified
-      unless defined? @checksum
-        raise "Application bug, trying to unpack no artifact"
-      end
+      fail 'Application bug, trying to unpack no artifact' unless defined? @checksum
 
       # Make sure the files actually exist...
-      unless File.exists?($config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml")
+      unless File.exist?($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml")
         $logger.error "The files expected for #{@checksum} do not appear to exist or are not readable"
-        raise "Fatal unexpected error"
+        fail 'Fatal unexpected error'
       end
 
-      unless File.exists?($config["general"]["app_cache"] + "/artifacts/artifact.#{@checksum}.tar.gz")
+      unless File.exist?($config['general']['app_cache'] + "/artifacts/artifact.#{@checksum}.tar.gz")
         $logger.error "The files expected for #{@checksum} do not appear to exist or are not readable"
-        raise "Fatal unexpected error"
+        fail 'Fatal unexpected error'
       end
 
       # Clean up an existing unpacked copy - in *theory* it should be same, but
@@ -399,73 +377,64 @@ module Pupistry
       clean_unpack
 
       # Unpack the archive file
-      FileUtils.mkdir_p($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}")
-      Dir.chdir($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}") do
-
-        unless system "tar -xf ../artifact.#{@checksum}.tar.gz"
-          $logger.error "Unable to unpack artifact files to #{Dir.pwd}"
-          raise "An unexpected error occured when executing tar"
-        else
+      FileUtils.mkdir_p($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}")
+      Dir.chdir($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}") do
+        if system "tar -xf ../artifact.#{@checksum}.tar.gz"
           $logger.debug "Successfully unpacked artifact #{@checksum}"
+        else
+          $logger.error "Unable to unpack artifact files to #{Dir.pwd}"
+          fail 'An unexpected error occured when executing tar'
         end
       end
-
     end
-
 
     def install
       # Copy the unpacked artifact into the agent's configured location. Generally all the
       # heavy lifting is done by fetch_latest and unpack methods.
 
       # An application version must be specified
-      unless defined? @checksum
-        raise "Application bug, trying to install no artifact"
-      end
+      fail 'Application bug, trying to install no artifact' unless defined? @checksum
 
       # Validate the artifact if GPG is enabled.
-      if $config["general"]["gpg_disable"] == true
-        $logger.warn "You have GPG validation *disabled*, whilst not critical it does weaken your security."
-        $logger.warn "Skipping validation step..."
+      if $config['general']['gpg_disable'] == true
+        $logger.warn 'You have GPG validation *disabled*, whilst not critical it does weaken your security.'
+        $logger.warn 'Skipping validation step...'
       else
 
         gpgsig = Pupistry::GPG.new @checksum
 
         unless gpgsig.artifact_verify
-          $logger.fatal "The GPG signature could not be validated for the artifact. This could be a bug, a file corruption or a POSSIBLE SECURITY ISSUE such as maliciously modified content."
-          raise "Fatal unexpected error"
+          $logger.fatal 'The GPG signature could not be validated for the artifact. This could be a bug, a file corruption or a POSSIBLE SECURITY ISSUE such as maliciously modified content.' # rubocop:disable Metrics/LineLength
+          fail 'Fatal unexpected error'
         end
 
       end
 
-
       # Make sure the artifact has been unpacked
-      unless Dir.exists?($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}")
+      unless Dir.exist?($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}")
         $logger.error "The unpacked directory expected for #{@checksum} does not appear to exist or is not readable"
-        raise "Fatal unexpected error"
+        fail 'Fatal unexpected error'
       end
 
       # Purge any currently installed files in the directory. See clean_install
-      # TODO notes for how this could be improved.
-      unless clean_install
-        $logger.error "Installation not proceeduing due to issues cleaning/prepping destination dir"
-      end
+      # TODO: notes for how this could be improved.
+      $logger.error 'Installation not proceeding due to issues cleaning/prepping destination dir' unless clean_install
 
       # Make sure the destination directory exists
-      unless Dir.exists?($config["agent"]["puppetcode"])
-        $logger.error "The destination path of #{$config["agent"]["puppetcode"]} does not appear to exist or is not readable"
-        raise "Fatal unexpected error"
-      end
-    
-      # Clone unpacked contents to the installation directory
-      begin
-        FileUtils.cp_r $config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}/puppetcode/.", $config["agent"]["puppetcode"]
-        FileUtils.cp   $config["general"]["app_cache"] + "/artifacts/manifest.#{@checksum}.yaml", $config["agent"]["puppetcode"] + "/manifest.pupistry.yaml"
-        return true
-      rescue
-        $logger.fatal "An unexpected error occured when copying the unpacked artifact to #{$config["agent"]["puppetcode"]}"
-        raise e
+      unless Dir.exist?($config['agent']['puppetcode'])
+        $logger.error "The destination path of #{$config['agent']['puppetcode']} does not appear to exist or is not readable"
+        fail 'Fatal unexpected error'
       end
 
+      # Clone unpacked contents to the installation directory
+      begin
+        FileUtils.cp_r $config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}/puppetcode/.", $config['agent']['puppetcode']
+        FileUtils.cp $config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml", $config['agent']['puppetcode'] + '/manifest.pupistry.yaml'
+        return true
+      rescue
+        $logger.fatal "An unexpected error occured when copying the unpacked artifact to #{$config['agent']['puppetcode']}"
+        raise e
+      end
     end
 
     def clean_install
@@ -476,49 +445,43 @@ module Pupistry
       # TODO: Do this smarter, we should track what files we drop in, and then remove
       # any that weren't touched. Need to avoid rsync and stick with native to make
       # support easier for weird/minimilistic distributions.
-      
-      if defined? $config["agent"]["puppetcode"]
-        if $config["agent"]["puppetcode"].empty?
+
+      if defined? $config['agent']['puppetcode'] # rubocop:disable Style/GuardClause
+        if $config['agent']['puppetcode'].empty?
           $logger.error "You must configure a location for the agent's Puppet code to be deployed to"
           return false
         else
-          $logger.debug "Cleaning up #{$config["agent"]["puppetcode"]} directory"
+          $logger.debug "Cleaning up #{$config['agent']['puppetcode']} directory"
 
-          if Dir.exists?($config["agent"]["puppetcode"])
-            FileUtils.rm_r Dir.glob($config["agent"]["puppetcode"] + "/*"), :secure => true
+          if Dir.exist?($config['agent']['puppetcode'])
+            FileUtils.rm_r Dir.glob($config['agent']['puppetcode'] + '/*'), secure: true
           else
-            FileUtils.mkdir_p $config["agent"]["puppetcode"]
-            FileUtils.chmod(0700, $config["agent"]["puppetcode"])
+            FileUtils.mkdir_p $config['agent']['puppetcode']
+            FileUtils.chmod(0700, $config['agent']['puppetcode'])
           end
 
           return true
         end
       end
-
     end
-
 
     def clean_unpack
       # Cleanup/remove any unpacked archive directories. Requires that the
       # checksum be set to the version to be purged.
 
-      unless defined? @checksum
-        raise "Application bug, trying to unpack no artifact"
-      end
+      fail 'Application bug, trying to unpack no artifact' unless defined? @checksum
 
-      if Dir.exists?($config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}/")
-        $logger.debug "Cleaning up #{$config["general"]["app_cache"]}/artifacts/unpacked.#{@checksum}..."
-        FileUtils.rm_r $config["general"]["app_cache"] + "/artifacts/unpacked.#{@checksum}", :secure => true
+      if Dir.exist?($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}/")
+        $logger.debug "Cleaning up #{$config['general']['app_cache']}/artifacts/unpacked.#{@checksum}..."
+        FileUtils.rm_r $config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}", secure: true
         return true
       else
-        $logger.debug "Nothing to cleanup (selected artifact is not currently unpacked)"
+        $logger.debug 'Nothing to cleanup (selected artifact is not currently unpacked)'
         return true
       end
 
-      return false
-
+      false
     end
-
   end
 end
 
