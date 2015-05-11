@@ -72,7 +72,7 @@ module Pupistry
 
       $logger.debug 'Checking latest artifact version...'
 
-      s3        = Pupistry::Storage_AWS.new 'agent'
+      s3        = Pupistry::StorageAWS.new 'agent'
       contents  = s3.download 'manifest.latest.yaml'
 
       if contents
@@ -164,7 +164,7 @@ module Pupistry
          File.exist?($config['general']['app_cache'] + "/artifacts/artifact.#{@checksum}.tar.gz")
         $logger.debug 'This artifact is already present, no download required.'
       else
-        s3 = Pupistry::Storage_AWS.new 'agent'
+        s3 = Pupistry::StorageAWS.new 'agent'
         s3.download "manifest.#{@checksum}.yaml", $config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml"
         s3.download "artifact.#{@checksum}.tar.gz", $config['general']['app_cache'] + "/artifacts/artifact.#{@checksum}.tar.gz"
       end
@@ -242,7 +242,7 @@ module Pupistry
       # as the "latest" file which will be downloaded by all the agents checking
       # for new updates.
 
-      s3 = Pupistry::Storage_AWS.new 'build'
+      s3 = Pupistry::StorageAWS.new 'build'
       s3.upload $config['general']['app_cache'] + "/artifacts/artifact.#{@checksum}.tar.gz", "artifact.#{@checksum}.tar.gz"
       s3.upload $config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml", "manifest.#{@checksum}.yaml"
       s3.upload $config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml", 'manifest.latest.yaml'

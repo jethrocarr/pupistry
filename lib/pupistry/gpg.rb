@@ -207,7 +207,7 @@ module Pupistry
         end
 
         # Upload
-        s3 = Pupistry::Storage_AWS.new 'build'
+        s3 = Pupistry::StorageAWS.new 'build'
 
         unless s3.upload "#{$config['general']['app_cache']}/artifacts/#{$config['general']['gpg_signing_key']}.publickey", "#{$config['general']['gpg_signing_key']}.publickey"
           $logger.error 'Unable to upload GPG key to S3 bucket'
@@ -229,7 +229,7 @@ module Pupistry
     def pubkey_install
       $logger.warn "Installing GPG key #{$config['general']['gpg_signing_key']}..."
 
-      s3 = Pupistry::Storage_AWS.new 'agent'
+      s3 = Pupistry::StorageAWS.new 'agent'
 
       unless s3.download "#{$config['general']['gpg_signing_key']}.publickey", "#{$config['general']['app_cache']}/artifacts/#{$config['general']['gpg_signing_key']}.publickey"
         $logger.error 'Unable to download GPG key from S3 bucket, this will prevent validation of signature'
