@@ -295,7 +295,7 @@ module Pupistry
         # if nothing has changed since it's easy to forget to git push a single
         # module/change.
 
-        if File.exists($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml")
+        if File.exists?($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml")
           $logger.error "This artifact version (#{@checksum}) has already been built, nothing todo."
           $logger.error "Did you remember to \"git push\" your module changes?"
 
