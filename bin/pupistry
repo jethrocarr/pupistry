@@ -14,23 +14,20 @@ STDOUT.sync = true
 # Logging - STDOUT only
 $logger = Logger.new(STDOUT)
 
-
 # Thor is a toolkit for producing command line applications, see http://whatisthor.com/
 class CLI < Thor
-  class_option :verbose, :type => :boolean
-  class_option :config, :type => :string
-
+  class_option :verbose, type: :boolean
+  class_option :config, type: :string
 
   ## Agent Commands
-  
-  desc "apply", "Apply the latest Puppet artifact"
-  method_option :noop,        :type => :boolean, :desc => "No changes mode (note: does change checked out artifact, but no Puppet changes)"
-  method_option :force,       :type => :boolean, :desc => "Ignore existing versions, re-apply every time"
-  method_option :minimal,     :type => :boolean, :desc => "Don't run Puppet unless the artifact has changed"
-  method_option :daemon,      :type => :boolean, :desc => "Run as a system daemon"
-  method_option :environment, :type => :string,  :desc => "Specifiy which environment to deploy (default: master)"
-  def apply
 
+  desc 'apply', 'Apply the latest Puppet artifact'
+  method_option :noop,        type: :boolean, desc: 'No changes mode (note: does change checked out artifact, but no Puppet changes)'
+  method_option :force,       type: :boolean, desc: 'Ignore existing versions, re-apply every time'
+  method_option :minimal,     type: :boolean, desc: "Don't run Puppet unless the artifact has changed"
+  method_option :daemon,      type: :boolean, desc: 'Run as a system daemon'
+  method_option :environment, type: :string,  desc: 'Specifiy which environment to deploy (default: master)'
+  def apply
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
       $logger.level = Logger::DEBUG
@@ -45,14 +42,9 @@ class CLI < Thor
     end
 
     # Muppet Check
-    if options[:noop] and options[:daemon]
-      $logger.warn "A daemon running in noop will do nothing except log what changes it could apply"
-    end
+    $logger.warn 'A daemon running in noop will do nothing except log what changes it could apply' if options[:noop] and options[:daemon]
 
-    if options[:force] and options[:daemon]
-      $logger.warn "A daemon running with force will be very wasteful of system resources! NOT RECOMMENDED."
-    end
-
+    $logger.warn 'A daemon running with force will be very wasteful of system resources! NOT RECOMMENDED.' if options[:force] and options[:daemon]
 
     if options[:daemon]
       # Run as a daemon service
@@ -63,13 +55,10 @@ class CLI < Thor
     end
   end
 
-
-
   ## Workstation Commands
 
-  desc "build", "Build a new archive file"
+  desc 'build', 'Build a new archive file'
   def build
-
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
       $logger.level = Logger::DEBUG
@@ -83,7 +72,6 @@ class CLI < Thor
       Pupistry::Config.find_and_load
     end
 
-
     begin
       # Fetch the latest data with r10k
       artifact = Pupistry::Artifact.new
@@ -91,20 +79,17 @@ class CLI < Thor
       artifact.fetch_r10k
       artifact.build_artifact
 
-      puts "--"
-      puts "Tip: Run pupistry diff to see what changed since the last artifact version"
+      puts '--'
+      puts 'Tip: Run pupistry diff to see what changed since the last artifact version'
 
-    rescue Exception => e
-      $logger.fatal "An unexpected error occured when trying to generate the new artifact file"
+    rescue StandardError => e
+      $logger.fatal 'An unexpected error occured when trying to generate the new artifact file'
       raise e
     end
-
   end
 
-
-  desc "diff", "Show what has changed between now and the current live artifact"
+  desc 'diff', 'Show what has changed between now and the current live artifact'
   def diff
-
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
       $logger.level = Logger::DEBUG
@@ -123,7 +108,7 @@ class CLI < Thor
     artifact_upstream.checksum = artifact_upstream.fetch_latest
 
     unless artifact_upstream.checksum
-      $logger.error "There is no upstream artifact to compare to."
+      $logger.error 'There is no upstream artifact to compare to.'
       exit 0
     end
 
@@ -134,16 +119,14 @@ class CLI < Thor
     artifact_current.checksum = artifact_current.fetch_current
 
     unless artifact_current.checksum
-      $logger.error "There is no current artifact to compare to, run \"pupistry build\" first to generate one with current changes"
+      $logger.error 'There is no current artifact to compare to, run "pupistry build" first to generate one with current changes'
       exit 0
     end
 
     artifact_current.fetch_artifact
 
     # Are they the same version?
-    if artifact_current.checksum == artifact_upstream.checksum
-      $logger.info "Current version and upstream version are the same, no diff"
-    end
+    $logger.info 'Current version and upstream version are the same, no diff' if artifact_current.checksum == artifact_upstream.checksum
 
     # Unpack the archives
     artifact_current.unpack
@@ -161,25 +144,22 @@ class CLI < Thor
     #       produce a new mega diff, we want only the real changes to be
     #       easily visible, or the diff function loses value to people.
     #       Pull requests welcome :-) xoxo
-    
-    Dir.chdir("#{$config["general"]["app_cache"]}/artifacts/") do
+
+    Dir.chdir("#{$config['general']['app_cache']}/artifacts/") do
       unless system "diff -Nuar unpacked.#{artifact_upstream.checksum} unpacked.#{artifact_current.checksum}"
       end
     end
-
 
     # Cleanup
     artifact_current.clean_unpack
     artifact_upstream.clean_unpack
 
-    puts "--"
-    puts "Tip: Run pupistry push to GPG sign & upload if happy to go live"
+    puts '--'
+    puts 'Tip: Run pupistry push to GPG sign & upload if happy to go live'
   end
 
-
-  desc "push", "Sign & Upload a new artifact version"
+  desc 'push', 'Sign & Upload a new artifact version'
   def push
-
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
       $logger.level = Logger::DEBUG
@@ -198,12 +178,10 @@ class CLI < Thor
     artifact.push_artifact
   end
 
-
-  desc "bootstrap", "Generate a user-data bootstrap script for a node"
-  method_option :template, :type => :string, :desc => 'The template you want to generate'
-  method_option :base64, :type => :boolean, :desc => 'Output in base64 format'
+  desc 'bootstrap', 'Generate a user-data bootstrap script for a node'
+  method_option :template, type: :string, desc: 'The template you want to generate'
+  method_option :base64, type: :boolean, desc: 'Output in base64 format'
   def bootstrap
-
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
       $logger.level = Logger::DEBUG
@@ -216,7 +194,6 @@ class CLI < Thor
     else
       Pupistry::Config.find_and_load
     end
-
 
     if options[:template]
       $logger.info "Generating bootstrap template #{options[:template]}"
@@ -232,20 +209,17 @@ class CLI < Thor
     else
       templates = Pupistry::Bootstrap.new
       templates.list
-     
-      puts "--"
-      puts "Tip: Run `pupistry bootstrap --template example` to generate a specific template"
-    end
-      
-  end
 
+      puts '--'
+      puts 'Tip: Run `pupistry bootstrap --template example` to generate a specific template'
+    end
+  end
 
   ## Other Commands
 
-  desc "setup", "Write a template configuration file"
-  method_option :force,       :type => :boolean, :desc => "Replace an existing config file"
+  desc 'setup', 'Write a template configuration file'
+  method_option :force, type: :boolean, desc: 'Replace an existing config file'
   def setup
-
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
       $logger.level = Logger::DEBUG
@@ -253,52 +227,49 @@ class CLI < Thor
       $logger.level = Logger::INFO
     end
 
-
     # Generally we should put the Pupistry configuration into the home dir, a
     # developer who wants it elsewhere will be capable of figuring out how to
     # install themselves.
-    config_dest = "~/.pupistry/settings.yaml"
+    config_dest = '~/.pupistry/settings.yaml'
 
     # If the HOME environmental hasn't been set, dump the config into CWD.
     unless ENV['HOME']
       config_dest = "#{Dir.pwd}/settings.yaml"
       $logger.warn "HOME is not set, so writing configuration file into #{config_dest}"
     end
-    
+
     config_dest = File.expand_path config_dest
 
     # Make sure the directory exists
-    unless Dir.exists?(File.dirname(config_dest))
-      FileUtils.mkdir_p(File.dirname(config_dest))
-    end
+    FileUtils.mkdir_p(File.dirname(config_dest)) unless Dir.exist?(File.dirname(config_dest))
 
     # Does a local template exist?
-    if File.exists?("#{Dir.pwd}/settings.example.yaml")
+    if File.exist?("#{Dir.pwd}/settings.example.yaml")
       config_source = "#{Dir.pwd}/settings.example.yaml"
     else
       # Check for GEM installed location
       begin
-        config_source = Gem::Specification.find_by_name("pupistry").gem_dir
+        config_source = Gem::Specification.find_by_name('pupistry').gem_dir
         config_source = "#{config_source}/settings.example.yaml"
       rescue Gem::LoadError
         # Yeah I dunno what you're doing...
-        $logger.error "Unable to find settings.example.yaml, seems we are not running as a Gem nor in the CWD of the app source"
+        $logger.error 'Unable to find settings.example.yaml, seems we are not running as a Gem nor in the CWD of the app source'
         exit 0
       end
     end
 
-    unless File.exists?(config_source)
+    unless File.exist?(config_source)
       $logger.error "Template configuration should exist in #{config_source} but no file found/readable!"
       exit 0
     end
 
     # Prevent Overwrite
-    if File.exists?(config_dest)
-      unless options[:force]
+    if File.exist?(config_dest)
+      if options[:force]
+        $logger.warn "Overwriting #{config_dest}..."
+      else
         $logger.error "Configuration file #{config_dest} already exists, if you wish to replace it please call with --force"
         exit 0
-      else
-        $logger.warn "Overwriting #{config_dest}..."
       end
     end
 
@@ -307,7 +278,7 @@ class CLI < Thor
       FileUtils.cp config_source, config_dest
 
       $logger.info "Successfully installed configuration file into #{config_dest}"
-    rescue Exception => e
+    rescue StandardError => e
       $logger.error "An unexpected error occured when copying #{config_source} to #{config_dest}"
       raise e
     end
@@ -322,9 +293,7 @@ class CLI < Thor
     else
       $logger.info "You now need to edit #{config_dest} with your configuration values before running Pupistry."
     end
-
   end
-
 end
 
 CLI.start(ARGV)
