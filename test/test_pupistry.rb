@@ -6,6 +6,6 @@ class TestPupistry < Minitest::Test
   end
 
   def test_it_does_something_useful
-    assert false
+    skip 'we need to write tests!!'
   end
 end

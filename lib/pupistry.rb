@@ -1,3 +1,4 @@
+require 'pupistry/version'
 require 'pupistry/agent'
 require 'pupistry/artifact'
 require 'pupistry/bootstrap'
