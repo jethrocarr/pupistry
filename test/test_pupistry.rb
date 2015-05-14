@@ -1,11 +1,11 @@
 require_relative './minitest_helper'
 
-class TestPupistry < Minitest::Test
-  def test_that_it_has_a_version_number
+describe Pupistry do
+  it 'has_a_version_number' do
     refute_nil ::Pupistry::VERSION
   end
 
-  def test_it_does_something_useful
+  it 'does_something_useful' do
     skip 'we need to write tests!!'
   end
 end
