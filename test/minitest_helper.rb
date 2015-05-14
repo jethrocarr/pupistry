@@ -7,4 +7,5 @@ end
 
 require 'pupistry'
 
+require 'minitest/spec'
 require 'minitest/autorun'
