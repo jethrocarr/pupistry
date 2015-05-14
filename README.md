@@ -1,5 +1,7 @@
 # pupistry
 
+[![Build Status](https://travis-ci.org/jethrocarr/pupistry.svg)](https://travis-ci.org/jethrocarr/pupistry)
+
 Pupistry (puppet + artistry) is a solution for implementing reliable and secure
 masterless puppet deployments by taking Puppet modules assembled by r10k and
 generating compresed and signed archives for distribution to the masterless
