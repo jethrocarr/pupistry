@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
                        'lib/**/*',
                        'resources/**/*',
                        'README.md',
-                       'settingspec.example.yaml'
+                       'settings.example.yaml'
                      ]
   spec.executables = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.homepage    = 'https://github.com/jethrocarr/pupistry'
