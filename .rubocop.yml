@@ -4,11 +4,31 @@ AllCops:
 Style/Documentation:
   Enabled: false
 
+
+# Generally all lines are under 80 chars, but sometimes it just makes sense to
+# go beyond it for clariy or for output/log entries and it gets annoying and
+# ugly having exclusions all over the place.
+
 Metrics/LineLength:
   Max: 200
+
+
+# We should work on cutting these down over time, however if we just run with
+# the defaults right now, it creates far too much noise to ever get anything
+# useful out of Rubocop.
+#
+# TODO: Lower levels and address some of the length/complexity issues.
+Metrics/AbcSize:
+  Max: 100
 
 Metrics/MethodLength:
   Max: 200
 
 Metrics/ClassLength:
   Max: 1000
+
+Metrics/CyclomaticComplexity:
+  Max: 20
+
+Metrics/PerceivedComplexity:
+  Max: 20
