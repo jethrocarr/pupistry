@@ -1,4 +1,6 @@
-/vendor/cache
+vendor/
+coverage/
+bin/
 *.gem
 *.swp
 settings.yaml
