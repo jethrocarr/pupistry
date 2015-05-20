@@ -1,6 +1,7 @@
 # rubocop:disable Style/Documentation, Style/GlobalVars
 require 'rubygems'
 require 'yaml'
+require 'safe_yaml'
 require 'time'
 require 'digest'
 require 'fileutils'
@@ -76,7 +77,7 @@ module Pupistry
       contents  = s3.download 'manifest.latest.yaml'
 
       if contents
-        manifest = YAML.load(contents)
+        manifest = YAML.load(contents, :safe => true, :raise_on_unknown_tag => true)
 
         if defined? manifest['version']
           # We have a manifest version supplied, however since the manifest
@@ -112,7 +113,7 @@ module Pupistry
 
       # Read the symlink information to get the latest version
       if File.exist?($config['general']['app_cache'] + '/artifacts/manifest.latest.yaml')
-        manifest    = YAML.load(File.open($config['general']['app_cache'] + '/artifacts/manifest.latest.yaml'))
+        manifest    = YAML.load(File.open($config['general']['app_cache'] + '/artifacts/manifest.latest.yaml'), :safe => true, :raise_on_unknown_tag => true)
         @checksum   = manifest['version']
       else
         $logger.error 'No artifact has been built yet. You need to run pupistry build first?'
@@ -131,7 +132,7 @@ module Pupistry
 
       # Look for a manifest file in the directory and read the version from it.
       if File.exist?($config['agent']['puppetcode'] + '/manifest.pupistry.yaml')
-        manifest = YAML.load(File.open($config['agent']['puppetcode'] + '/manifest.pupistry.yaml'))
+        manifest = YAML.load(File.open($config['agent']['puppetcode'] + '/manifest.pupistry.yaml'), :safe => true, :raise_on_unknown_tag => true)
 
         return manifest['version']
       else

@@ -16,6 +16,8 @@ describe Pupistry::Config do
 
   it 'exits with an error if a non-YAML file is specified for use' do
     $logger.expect :debug, nil, [String]
+    $logger.expect :fatal, nil, [String]
+    $logger.expect :debug, nil, [String]
     assert_raises(SystemExit) do
       Pupistry::Config.load('test/data/nonyaml.txt')
     end
@@ -23,6 +25,8 @@ describe Pupistry::Config do
   end
 
   it 'exits with an error if an empty YAML file is specified for use' do
+    $logger.expect :debug, nil, [String]
+    $logger.expect :fatal, nil, [String]
     $logger.expect :debug, nil, [String]
     assert_raises(SystemExit) do
       Pupistry::Config.load('test/data/empty.yaml')

@@ -3,6 +3,7 @@ require 'rubygems'
 require 'fileutils'
 require 'tempfile'
 require 'yaml'
+require 'safe_yaml'
 
 module Pupistry
   # Pupistry::Config
@@ -13,13 +14,36 @@ module Pupistry
   class Config
     def self.load(file)
       $logger.debug "Loading configuration file #{file}"
-
+     
+      # Load YAML file with minimum safety/basic checks
       unless File.exist?(file)
         $logger.fatal 'The configuration file provided does not exist, or cannot be accessed'
         exit 0
       end
 
-      $config = YAML.load(File.open(file))
+      begin
+        $config = YAML.load(File.open(file), :safe => true, :raise_on_unknown_tag => true)
+      rescue Exception => ex
+        $logger.fatal "The supplied file is not a valid YAML configuration file"
+        $logger.debug ex.message
+        exit 0
+      end
+
+
+      # Run checks for minimum configuration parameters
+      # TODO: Is there a smarter way of doing this? Maybe a better config parser?
+      begin
+        raise "Missing general:app_cache"         unless defined? $config['general']['app_cache']
+        raise "Missing general:s3_bucket"         unless defined? $config['general']['s3_bucket']
+        raise "Missing general:gpg_disable"       unless defined? $config['general']['gpg_disable']
+        raise "Missing agent:puppetcode"          unless defined? $config['agent']['puppetcode']
+      rescue => ex
+        $logger.fatal "The supplied configuration files doesn't include the minimum expect configuration parameters"
+        $logger.debug ex.message
+        exit 0
+      end
+
+      
 
       # Make sure cache directory exists, create it otherwise
       $config['general']['app_cache'] = File.expand_path($config['general']['app_cache']).chomp('/')

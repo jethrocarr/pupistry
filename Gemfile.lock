@@ -6,6 +6,7 @@ PATH
       erubis
       r10k
       rufus-scheduler (~> 3)
+      safe_yaml
       thor
 
 GEM
@@ -61,6 +62,7 @@ GEM
       ruby-progressbar (~> 1.4)
     ruby-progressbar (1.7.5)
     rufus-scheduler (3.1.1)
+    safe_yaml (1.0.4)
     semantic_puppet (0.1.1)
     simplecov (0.10.0)
       docile (~> 1.1.0)
