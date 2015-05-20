@@ -405,7 +405,7 @@ module Pupistry
         gpgsig = Pupistry::GPG.new @checksum
 
         unless gpgsig.artifact_verify
-          $logger.fatal 'The GPG signature could not be validated for the artifact. This could be a bug, a file corruption or a POSSIBLE SECURITY ISSUE such as maliciously modified content.' # rubocop:disable Metrics/LineLength
+          $logger.fatal 'The GPG signature could not be validated for the artifact. This could be a bug, a file corruption or a POSSIBLE SECURITY ISSUE such as maliciously modified content.'
           fail 'Fatal unexpected error'
         end
 

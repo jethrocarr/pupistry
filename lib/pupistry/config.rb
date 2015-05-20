@@ -1,4 +1,4 @@
-# rubocop:disable Style/Documentation
+# rubocop:disable Style/Documentation, Style/GlobalVars
 require 'rubygems'
 require 'fileutils'
 require 'tempfile'
