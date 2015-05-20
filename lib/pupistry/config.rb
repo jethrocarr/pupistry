@@ -23,8 +23,8 @@ module Pupistry
 
       begin
         $config = YAML.load(File.open(file), safe: true, raise_on_unknown_tag: true)
-      rescue Exception => ex
-        $logger.fatal "The supplied file is not a valid YAML configuration file"
+      rescue => ex
+        $logger.fatal 'The supplied file is not a valid YAML configuration file'
         $logger.debug ex.message
         exit 0
       end
@@ -33,12 +33,12 @@ module Pupistry
       # Run checks for minimum configuration parameters
       # TODO: Is there a smarter way of doing this? Maybe a better config parser?
       begin
-        fail "Missing general:app_cache"         unless defined? $config['general']['app_cache']
-        fail "Missing general:s3_bucket"         unless defined? $config['general']['s3_bucket']
-        fail "Missing general:gpg_disable"       unless defined? $config['general']['gpg_disable']
-        fail "Missing agent:puppetcode"          unless defined? $config['agent']['puppetcode']
+        fail 'Missing general:app_cache'         unless defined? $config['general']['app_cache']
+        fail 'Missing general:s3_bucket'         unless defined? $config['general']['s3_bucket']
+        fail 'Missing general:gpg_disable'       unless defined? $config['general']['gpg_disable']
+        fail 'Missing agent:puppetcode'          unless defined? $config['agent']['puppetcode']
       rescue => ex
-        $logger.fatal "The supplied configuration files doesn't include the minimum expect configuration parameters"
+        $logger.fatal 'The supplied configuration files doesn\'t include the minimum expect configuration parameters'
         $logger.debug ex.message
         exit 0
       end
