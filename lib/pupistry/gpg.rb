@@ -134,7 +134,7 @@ module Pupistry
     # base64    Encoded signature
     #
     def signature_extract
-      manifest = YAML.load(File.open($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml"), :safe => true, :raise_on_unknown_tag => true)
+      manifest = YAML.load(File.open($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml"), safe: true, raise_on_unknown_tag: true)
 
       if manifest['gpgsig']
         # We have the base64 version
@@ -156,7 +156,7 @@ module Pupistry
     # Save the signature into the manifest file
     #
     def signature_save
-      manifest            = YAML.load(File.open($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml"), :safe => true, :raise_on_unknown_tag => true)
+      manifest            = YAML.load(File.open($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml"), safe: true, raise_on_unknown_tag: true)
       manifest['gpgsig']  = @signature
 
       File.open("#{$config['general']['app_cache']}/artifacts/manifest.#{@checksum}.yaml", 'w') do |fh|

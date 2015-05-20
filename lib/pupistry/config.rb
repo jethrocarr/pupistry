@@ -22,7 +22,7 @@ module Pupistry
       end
 
       begin
-        $config = YAML.load(File.open(file), :safe => true, :raise_on_unknown_tag => true)
+        $config = YAML.load(File.open(file), safe: true, raise_on_unknown_tag: true)
       rescue Exception => ex
         $logger.fatal "The supplied file is not a valid YAML configuration file"
         $logger.debug ex.message
