@@ -503,7 +503,9 @@ author.
 
 When developing Pupistry, you can run the git repo copy with:
 
-    ruby -Ilib/ -r rubygems bin/pupistry
+    gem install bundler
+    bundle install
+    bundle exec pupistry
 
 By default Pupistry will try to load a settings.yaml file in the current
 working directory, before then trying `~/.pupistry/settings.yaml` and then
