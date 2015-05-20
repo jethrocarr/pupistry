@@ -33,10 +33,10 @@ module Pupistry
       # Run checks for minimum configuration parameters
       # TODO: Is there a smarter way of doing this? Maybe a better config parser?
       begin
-        raise "Missing general:app_cache"         unless defined? $config['general']['app_cache']
-        raise "Missing general:s3_bucket"         unless defined? $config['general']['s3_bucket']
-        raise "Missing general:gpg_disable"       unless defined? $config['general']['gpg_disable']
-        raise "Missing agent:puppetcode"          unless defined? $config['agent']['puppetcode']
+        fail "Missing general:app_cache"         unless defined? $config['general']['app_cache']
+        fail "Missing general:s3_bucket"         unless defined? $config['general']['s3_bucket']
+        fail "Missing general:gpg_disable"       unless defined? $config['general']['gpg_disable']
+        fail "Missing agent:puppetcode"          unless defined? $config['agent']['puppetcode']
       rescue => ex
         $logger.fatal "The supplied configuration files doesn't include the minimum expect configuration parameters"
         $logger.debug ex.message
