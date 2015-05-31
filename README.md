@@ -383,9 +383,9 @@ Note that the node initialisation process is still susceptable to weaknesses
 such as a bug in a new version of Puppet or Pupistry, or changes to the OS
 packages. If this is a concern/issue for you and you want complete reliability,
 then use the user data to build a host pre-loaded with Puppet and Pupistry and
-then create an image of it using a tool like packer.io. Doing this, you can
-make it possible to build all the way to Puppet execution with no dependencies
-on any third parties other than your VM provider and AWS S3.
+then create an image of it using a tool like [Packer](www.packer.io). Doing
+this, you can make it possible to build all the way to Puppet execution with no
+dependencies on any third parties other than your VM provider and AWS S3.
 
 Pupistry includes support for generating some Packer examples that you can
 either use as-is or built upon to meet your own needs. You can list all the
@@ -403,7 +403,7 @@ the `packer build` command. Note that some templates will require additional
 variables to be passed to them at run time, for example the AWS template
 requires a VPC ID and subnet ID specific to your account.
 
-   packer build \
+    packer build \
       -var 'aws_vpc_id=vpc-example' \
       -var 'aws_subnet_id=subnet-example' \
       output.json
