@@ -69,7 +69,7 @@ module Pupistry
 
 
       # Check if Puppet is available
-      unless system('puppet --version')
+      unless system('puppet --version 2>&1 > /dev/null')
         $logger.fatal "Unable to find an installation of Puppet - please make sure Puppet is installed from either OS package or Gem"
         exit 0
       end
