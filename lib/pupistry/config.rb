@@ -66,6 +66,14 @@ module Pupistry
         $logger.fatal "Unexpected exception when creating testfile in cache directory at \"#{$config['general']['app_cache']}\", is the directory writable?"
         raise e
       end
+
+
+      # Check if Puppet is available
+      unless system('puppet --version')
+        $logger.fatal "Unable to find an installation of Puppet - please make sure Puppet is installed from either OS package or Gem"
+        exit 0
+      end
+
     end
 
     def self.find_and_load

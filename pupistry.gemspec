@@ -39,4 +39,14 @@ Gem::Specification.new do |spec|
   # instead we call it via system, but we can cheat
   # a bit and list it here to get it installed for uspec.
   spec.add_runtime_dependency 'r10k'
+
+  # r10k requires Puppet to run, so the logial thing to do would be to
+  # uncomment the below dependency. But the issue is that generally
+  # Puppet is installed from system packages and we don't want to screw
+  # up the environmnent by loading a different version on.
+  #
+  # We instead handle this dependency by checking for it at startup and
+  # throwing an error if we cannot find puppet.
+  #
+  # spec.add_runtime_dependency 'puppet'
 end
