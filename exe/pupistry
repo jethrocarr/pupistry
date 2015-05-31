@@ -215,6 +215,44 @@ class CLI < Thor
     end
   end
 
+  desc 'packer', 'Generate a packer template for a particular provider with OS bootstrap script included'
+  method_option :template, type: :string, desc: 'The template you want to generate'
+  method_option :file, type: :string, desc: 'File to write the generated packer template into'
+  def packer
+    # Thor seems to force class options to be defined repeatedly? :-/
+    if options[:verbose]
+      $logger.level = Logger::DEBUG
+    else
+      $logger.level = Logger::INFO
+    end
+
+    if options[:config]
+      Pupistry::Config.load(options[:config])
+    else
+      Pupistry::Config.find_and_load
+    end
+
+    if options[:template]
+      $logger.info "Generating packer template #{options[:template]}"
+
+      templates = Pupistry::Packer.new
+      templates.build options[:template]
+
+      if options[:file]
+        templates.output_file options[:file]
+      else
+        templates.output_plain
+      end
+    else
+      templates = Pupistry::Packer.new
+      templates.list
+
+      puts '--'
+      puts 'Tip: Run `pupistry packer --template example` to generate a specific template'
+    end
+  end
+
+
   ## Other Commands
 
   desc 'setup', 'Write a template configuration file'

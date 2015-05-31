@@ -376,13 +376,44 @@ The bootstrap script goal is to get you from stock OS to running Pupistry and
 doing your first Puppet run. After that - it's up to you and your Puppet
 skills to make your node actually do something useful. :-)
 
+
+## 5. (optional) Baking an image with Packer
+
 Note that the node initialisation process is still susceptable to weaknesses
 such as a bug in a new version of Puppet or Pupistry, or changes to the OS
 packages. If this is a concern/issue for you and you want complete reliability,
 then use the user data to build a host pre-loaded with Puppet and Pupistry and
-then create an image of it using a tool like Packer. Doing this, you can make
-it possible to build all the way to Puppet execution with no dependencies on any
-third parties other than your VM provider and AWS S3.
+then create an image of it using a tool like packer.io. Doing this, you can
+make it possible to build all the way to Puppet execution with no dependencies
+on any third parties other than your VM provider and AWS S3.
+
+Pupistry includes support for generating some Packer examples that you can
+either use as-is or built upon to meet your own needs. You can list all the
+available Packer templates with:
+
+    pupistry packer
+
+You can select a template and generate a Packer file by specifying the template
+and the output file on the command line:
+
+    pupistry packer --template aws_amazon-any --file packer.json
+
+Once the file has been generated, you can build your packer environment with
+the `packer build` command. Note that some templates will require additional
+variables to be passed to them at run time, for example the AWS template
+requires a VPC ID and subnet ID specific to your account.
+
+   packer build \
+      -var 'aws_vpc_id=vpc-example' \
+      -var 'aws_subnet_id=subnet-example' \
+      output.json
+
+By default any Packer machines are built with the hostname of "packer" which
+allows you to specifically target them with your manifests. If you don't do any
+targetting, the default manifests will be applied.
+
+Templates tend to have other customisable variables, check the available
+options and their defaults with `packer inspect output.json`.
 
 
 # Tutorials

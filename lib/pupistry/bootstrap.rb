@@ -82,6 +82,12 @@ module Pupistry
       end
     end
 
+    def output_array
+      # Return the output as an array of lines. Useful by other internal
+      # methods such as Packer templates.
+      @contents.split(/\n/)
+    end
+
     def output_plain
       # Do nothing clever, just output the template data.
       puts '-- Bootstrap Start --'
