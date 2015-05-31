@@ -48,12 +48,22 @@
         "LifecycleConfiguration" : {
 	  "Rules" : [{
 	    "Status": "Enabled",
+	    "Prefix": "artifact.",
             "ExpirationInDays": { "Ref" : "S3BucketPurge" },
             "Transition": {
               "StorageClass": "Glacier",
               "TransitionInDays": { "Ref" : "S3BucketArchive" }
 	    }
-          }]
+          },
+	  {
+	    "Status": "Enabled",
+	    "Prefix": "manifest.",
+            "ExpirationInDays": { "Ref" : "S3BucketPurge" },
+            "Transition": {
+              "StorageClass": "Glacier",
+              "TransitionInDays": { "Ref" : "S3BucketArchive" }
+	    }
+	  }]
         }
       },
       "DeletionPolicy" : "Delete"
