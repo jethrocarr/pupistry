@@ -1,0 +1,38 @@
+{
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": "",
+    "aws_ami": "ami-19c8b123",
+    "aws_region": "ap-southeast-2",
+    "aws_ami_name": "pupistry aws_ubuntu-14.04 {{isotime \"2006-01-02\"}}",
+    "aws_vpc_id": null,
+    "aws_subnet_id": null,
+    "hostname": "packer"
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "{{user `aws_region`}}",
+    "source_ami": "{{user `aws_ami`}}",
+    "instance_type": "t2.micro",
+    "ssh_username": "ubuntu",
+    "vpc_id": "{{user `aws_vpc_id`}}",
+    "subnet_id": "{{user `aws_subnet_id`}}",
+    "ami_name": "{{user `aws_ami_name`}}"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "inline": ["sudo hostname {{user `hostname`}}"]
+  },
+  {
+    "type": "shell",
+    "inline_shebang": "/bin/bash -x",
+    "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} sudo '{{ .Path }}'",
+    "inline": <%= bootstrap_commands %>
+  },
+  {
+    "type": "shell",
+    "inline": ["sudo rm -rf /tmp/*"]
+  }]
+}
