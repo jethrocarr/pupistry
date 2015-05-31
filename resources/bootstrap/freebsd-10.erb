@@ -12,6 +12,8 @@
 # * We can't rely on Bash, since it's not available in FreeBSD by default.
 #
 
+setenv PATH /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
+
 env ASSUME_ALWAYS_YES=YES pkg bootstrap
 env ASSUME_ALWAYS_YES=YES pkg upgrade --yes
 env ASSUME_ALWAYS_YES=YES pkg install --yes ruby devel/ruby-gems puppet gnupg
@@ -37,5 +39,5 @@ agent:
 EOF
 chmod 700 /usr/local/etc/pupistry
 chmod 700 /usr/local/etc/puppetlabs/code/environments
-pupistry apply --verbose
+/usr/local/bin/pupistry apply --verbose
 

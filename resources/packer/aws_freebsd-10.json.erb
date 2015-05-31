@@ -1,0 +1,39 @@
+{
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": "",
+    "aws_ami": "ami-193f5123",
+    "aws_region": "ap-southeast-2",
+    "aws_ami_name": "pupistry aws_freebsd-10 {{isotime \"2006-01-02\"}}",
+    "aws_vpc_id": null,
+    "aws_subnet_id": null,
+    "hostname": "packer"
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "access_key": "{{user `aws_access_key`}}",
+    "secret_key": "{{user `aws_secret_key`}}",
+    "region": "{{user `aws_region`}}",
+    "source_ami": "{{user `aws_ami`}}",
+    "instance_type": "t2.micro",
+    "ssh_username": "ec2-user",
+    "ssh_timeout": "15m",
+    "vpc_id": "{{user `aws_vpc_id`}}",
+    "subnet_id": "{{user `aws_subnet_id`}}",
+    "ami_name": "{{user `aws_ami_name`}}"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "inline": ["su -m root -c 'hostname {{user `hostname`}}'"]
+  },
+  {
+    "type": "shell",
+    "inline_shebang": "/bin/tcsh",
+    "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} su -m root -c '/bin/tcsh {{ .Path }}'",
+    "inline": <%= bootstrap_commands %>
+  },
+  {
+    "type": "shell",
+    "inline": ["su -m root -c 'rm -rf /tmp/*'"]
+  }]
+}
