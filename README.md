@@ -514,6 +514,14 @@ finally `/etc/pupistry/settings.yaml`. You can also override with `--config`.
 Add `--verbose` for additional debugging information. If you have a bug this
 is the first thing you should run to get more context for reports.
 
+Whilst Pupistry has few tests, we would like to improve this. Please feel free
+to contribute any additional tests and aim to write tests for new features and
+definetly for any bug fixes. Once you have written tests, check the output of
+the tests and Rubocop with:
+
+    bundle exec rake
+
+
 
 # Contributions
 
