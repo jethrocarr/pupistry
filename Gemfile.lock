@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    pupistry (1.1.0)
+    pupistry (1.2.0)
       aws-sdk-v1
       erubis
       r10k

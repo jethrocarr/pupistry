@@ -1,7 +1,7 @@
 # rubocop:disable Style/GlobalVars
 require 'rubygems'
 require 'fileutils'
-require 'rufus/scheduler'
+require 'rufus-scheduler'
 
 # Pupistry::Agent
 module Pupistry
