@@ -14,7 +14,7 @@ yum install --assumeyes redhat-lsb-core
 rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-fedora-`lsb_release -sr`.noarch.rpm
 
 yum update --assumeyes
-yum install --assumeyes puppet ruby-devel rubygems gcc zlib-devel libxml2-devel patch gnupg2
+yum install --assumeyes puppet ruby-devel rubygems gcc zlib-devel libxml2-devel patch gnupg
 
 gem install pupistry
 mkdir -p /etc/pupistry
