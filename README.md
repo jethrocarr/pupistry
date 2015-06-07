@@ -348,6 +348,10 @@ Puppetfile:
 
     # Install the Pupistry companion module
     mod 'jethrocarr/pupistry'
+    
+    # Dependencies for Pupistry companion if not already defined
+    mod 'puppetlabs/stdlib'
+    mod 'jethrocarr/initfact'
 
 And include the pupistry module in all your systems:
 
