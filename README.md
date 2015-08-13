@@ -387,7 +387,7 @@ Note that the node initialisation process is still susceptable to weaknesses
 such as a bug in a new version of Puppet or Pupistry, or changes to the OS
 packages. If this is a concern/issue for you and you want complete reliability,
 then use the user data to build a host pre-loaded with Puppet and Pupistry and
-then create an image of it using a tool like [Packer](www.packer.io). Doing
+then create an image of it using a tool like [Packer](http://www.packer.io/). Doing
 this, you can make it possible to build all the way to Puppet execution with no
 dependencies on any third parties other than your VM provider and AWS S3.
 
