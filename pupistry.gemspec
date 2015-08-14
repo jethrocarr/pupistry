@@ -6,7 +6,7 @@ require 'pupistry/version'
 Gem::Specification.new do |spec|
   spec.name        = 'pupistry'
   spec.version     = Pupistry::VERSION # See lib/pupistry/version.rb to change version
-  spec.date        = '2015-06-06'
+  spec.date        = '2015-08-15'
   spec.summary     = 'A workflow tool for Puppet Masterless Deployments'
   spec.description = 'Provides security, reliability and consistency to Puppet masterless environments' # rubocop:disable Metrics/LineLength
   spec.authors     = ['Jethro Carr']
@@ -31,6 +31,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'aws-sdk-v1'
   spec.add_runtime_dependency 'thor'
+  spec.add_runtime_dependency 'which'
   spec.add_runtime_dependency 'erubis'
   spec.add_runtime_dependency 'safe_yaml'
   spec.add_runtime_dependency 'rufus-scheduler', '~> 3'

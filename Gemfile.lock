@@ -1,13 +1,14 @@
 PATH
   remote: .
   specs:
-    pupistry (1.2.1)
+    pupistry (1.2.2)
       aws-sdk-v1
       erubis
       r10k
       rufus-scheduler (~> 3)
       safe_yaml
       thor
+      which
 
 GEM
   remote: https://rubygems.org/
@@ -96,4 +97,3 @@ DEPENDENCIES
   rake (~> 10.0)
   rubocop
   simplecov (~> 0.10)
-  which

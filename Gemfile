@@ -7,5 +7,4 @@ gemspec
 # so we include it here, but we don't want it as a dependency of the gem
 # itself.
 gem "puppet"
-gem "which"
 
