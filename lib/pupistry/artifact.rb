@@ -6,7 +6,7 @@ require 'time'
 require 'digest'
 require 'fileutils'
 require 'base64'
-require 'which'
+require 'whichr'
 
 module Pupistry
   # Pupistry::Artifact
@@ -281,7 +281,7 @@ module Pupistry
         FileUtils.mkdir_p('artifacts')
 
         # Try to use GNU tar if present.
-        tar = Which.which('gtar').first || Which.which('gnutar').first || 'tar'
+        tar = RubyWhich.new.which('gtar').first || RubyWhich.new.which('gnutar').first || 'tar'
         $logger.debug "using tar at #{tar}"
 
         # Build the tar file - we delibertly don't compress in a single step
