@@ -6,6 +6,7 @@ require 'time'
 require 'digest'
 require 'fileutils'
 require 'base64'
+require 'which'
 
 module Pupistry
   # Pupistry::Artifact
@@ -279,10 +280,14 @@ module Pupistry
         # Make sure there is a directory to write artifacts into
         FileUtils.mkdir_p('artifacts')
 
+        # Try to use GNU tar if present.
+        tar = Which.which('gtar').first || Which.which('gnutar').first || 'tar'
+        $logger.debug "using tar at #{tar}"
+
         # Build the tar file - we delibertly don't compress in a single step
         # so that we can grab the checksum, since checksum will always differ
         # post-compression.
-        unless system "tar -c --exclude '.git' -f artifacts/artifact.temp.tar puppetcode/*"
+        unless system "#{tar} -c --exclude '.git' -f artifacts/artifact.temp.tar puppetcode/*"
           $logger.error 'Unable to create tarball'
           fail 'An unexpected error occured when executing tar'
         end
