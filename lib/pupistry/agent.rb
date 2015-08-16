@@ -136,6 +136,7 @@ module Pupistry
       puppet_cmd = 'puppet apply'
 
       puppet_cmd += ' --noop' if options[:noop]
+      puppet_cmd += ' --show_diff' if options[:verbose]
 
       puppet_cmd += " --environment #{environment}"
       puppet_cmd += " --confdir #{$config['agent']['puppetcode']}"
