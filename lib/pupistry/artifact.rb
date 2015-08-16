@@ -280,9 +280,10 @@ module Pupistry
         # Make sure there is a directory to write artifacts into
         FileUtils.mkdir_p('artifacts')
 
-        # Try to use GNU tar if present.
+        # Try to use GNU tar if present to work around weird issues with some
+        # versions of BSD tar when using the tar files with GNU tar subsequently.
         tar = RubyWhich.new.which('gtar').first || RubyWhich.new.which('gnutar').first || 'tar'
-        $logger.debug "using tar at #{tar}"
+        $logger.debug "Using tar at #{tar}"
 
         # Build the tar file - we delibertly don't compress in a single step
         # so that we can grab the checksum, since checksum will always differ
@@ -385,7 +386,12 @@ module Pupistry
       # Unpack the archive file
       FileUtils.mkdir_p($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}")
       Dir.chdir($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}") do
-        if system "tar -xf ../artifact.#{@checksum}.tar.gz"
+        # Try to use GNU tar if present to work around weird issues with some
+        # versions of BSD tar when using the tar files with GNU tar subsequently.
+        tar = RubyWhich.new.which('gtar').first || RubyWhich.new.which('gnutar').first || 'tar'
+        $logger.debug "Using tar at #{tar}"
+
+        if system "#{tar} -xf ../artifact.#{@checksum}.tar.gz"
           $logger.debug "Successfully unpacked artifact #{@checksum}"
         else
           $logger.error "Unable to unpack artifact files to #{Dir.pwd}"
