@@ -58,11 +58,7 @@
 	  {
 	    "Status": "Enabled",
 	    "Prefix": "manifest.",
-            "ExpirationInDays": { "Ref" : "S3BucketPurge" },
-            "Transition": {
-              "StorageClass": "Glacier",
-              "TransitionInDays": { "Ref" : "S3BucketArchive" }
-	    }
+            "ExpirationInDays": { "Ref" : "S3BucketPurge" }
 	  }]
         }
       },
