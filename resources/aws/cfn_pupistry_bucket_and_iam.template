@@ -94,7 +94,8 @@
                 {
                    "Effect":"Allow",
                    "Action":[
-                      "s3:GetObject"
+                      "s3:GetObject",
+		      "s3:RestoreObject"
                    ],
                    "Resource": [{ "Fn::Join" : ["", [ "arn:aws:s3:::", { "Ref" : "S3Bucket" } , "/*" ] ] }]
                 }
@@ -137,7 +138,8 @@
                    "Effect":"Allow",
                    "Action":[
                       "s3:PutObject",
-                      "s3:GetObject"
+                      "s3:GetObject",
+		      "s3:RestoreObject"
                    ],
                    "Resource": [{ "Fn::Join" : ["", [ "arn:aws:s3:::", { "Ref" : "S3Bucket" } , "/*" ] ] }]
                 }

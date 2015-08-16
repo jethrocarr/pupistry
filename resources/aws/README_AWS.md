@@ -34,7 +34,7 @@ Building the stack and setting specific parameter values
     --parameters \
     ParameterKey=S3BucketName,ParameterValue=pupistry-example-bucket \
     ParameterKey=S3BucketArchive,ParameterValue=30 \
-    ParameterKey=S3BucketPurge,ParameterValue=60
+    ParameterKey=S3BucketPurge,ParameterValue=365
 
 
 

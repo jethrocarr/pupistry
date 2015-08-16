@@ -119,6 +119,30 @@ module Pupistry
         $logger.fatal "Access to S3 bucket #{$config['general']['s3_bucket']} denied"
         exit 0
 
+      rescue AWS::S3::Errors::InvalidObjectState
+        $logger.warn "Unable to download \"#{src}\", it has been archived off into Glacier and would need to be recovered first."
+
+        # Do we need to restore it?
+        begin
+          if s3_obj.restore_in_progress?
+            $logger.warn "A restore of this file is currently in progress, but can take up to 4 hours - please re-try later."
+          else
+            # Not being restored currently, let's file a request. This allows
+            # us to cater for situations where a bunch of servers need to get
+            # an old manifest/file, however the fastest solution is to simply
+            # do a new `pupistry push` from a workstation to upload a new
+            # manifest file.
+            if s3_obj.restore(:days => 30)
+              $logger.warn "Recover request has been issued, this could take up to 4 hours to complete."
+              $logger.warn "Note that doing a `pupistry push` from the workstation would solve this faster."
+            end
+          end
+        rescue StandardError => e
+          $logger.error "Glacier restore request for #{src} failed. (#{e.class}), best option is to push the latest manifest from a workstation with `pupistry push`."
+        end
+
+        return false
+
       rescue AWS::S3::Errors::PermanentRedirect => e
         $logger.error "The wrong endpoint has been specified (or autodetected) for #{$config['general']['s3_bucket']}."
         raise e
