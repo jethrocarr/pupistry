@@ -1,0 +1,52 @@
+#!/bin/bash -x
+# Bootstrap for CentOS 5 and maybe other EL-derived platforms.
+#
+# Note: Amusingly doesn't actually work on RHEL itself, since ruby-devel
+#       does not seem to exist on it :-/ If you actually care about RHEL
+#       itself, I'll happily accept a pull request that does whatever is
+#       needed to fix ruby-devel on RHEL.
+#
+(
+exec 1> >(logger -s -t user-data) 2>&1
+
+# clock is wrong on some EL5 VMs out-of-the-box which then breaks S3 calls
+yum -y install ntp
+ntpdate 0.centos.pool.ntp.org
+
+wget https://yum.puppetlabs.com/puppetlabs-release-el-5.noarch.rpm
+rpm -ivh puppetlabs-release-el-5.noarch.rpm
+
+yum -y update
+yum -y install puppet ruby-devel rubygems gcc zlib-devel libxml2-devel libxslt-devel patch gnupg make
+
+# The latest version of these gems no longer run on Centos 5/Ruby 1.8.7. Hence
+# we download specific versions that meet the requirements of Pupistry but also
+# still work with CentOS 6. Note that this will get harder in future and at
+# some point Pupistry may have to drop CentOS 5 support due to dependencies.
+gem install nokogiri --version 1.4.7
+gem install r10k --version 1.5.1
+
+gem install pupistry
+mkdir -p /etc/pupistry
+mkdir -p <%= puppetcode %>
+cat > /etc/pupistry/settings.yaml << "EOF"
+general:
+  app_cache: ~/.pupistry/cache
+  s3_bucket: <%= s3_bucket %>
+  s3_prefix: <%= s3_prefix %>
+  gpg_disable: <%= gpg_disable %>
+  gpg_signing_key: <%= gpg_signing_key %>
+agent:
+  puppetcode: <%= puppetcode %>
+  access_key_id: <%= access_key_id %>
+  secret_access_key: <%= secret_access_key %>
+  region: <%= region %>
+  proxy_uri: <%= proxy_uri %>
+  daemon_frequency: <%= daemon_frequency %>
+  daemon_minimal: <%= daemon_minimal %>
+EOF
+chmod 700 /etc/pupistry/settings.yaml
+chmod 700 <%= puppetcode %>
+pupistry apply --verbose
+
+)

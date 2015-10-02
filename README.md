@@ -106,7 +106,14 @@ site-by-site (and you can still do it that way if you want), but if you want a
 nice easy life, Pupistry can generate you a bootstrap script for your platform.
 
     $ pupistry bootstrap
+    - amazon-any
+    - centos-5
+    - centos-6
     - centos-7
+    - debian-7
+    - debian-8
+    - fedora-any
+    - freebsd-10
     - ubuntu-14.04
 
     $ pupistry boostrap --template centos-7
