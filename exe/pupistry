@@ -16,17 +16,17 @@ $logger = Logger.new(STDOUT)
 
 # Thor is a toolkit for producing command line applications, see http://whatisthor.com/
 class CLI < Thor
-  class_option :verbose, type: :boolean
-  class_option :config, type: :string
+  class_option :verbose, :type => :boolean
+  class_option :config, :type => :string
 
   ## Agent Commands
 
   desc 'apply', 'Apply the latest Puppet artifact'
-  method_option :noop,        type: :boolean, desc: 'No changes mode (note: does change checked out artifact, but no Puppet changes)'
-  method_option :force,       type: :boolean, desc: 'Ignore existing versions, re-apply every time'
-  method_option :minimal,     type: :boolean, desc: "Don't run Puppet unless the artifact has changed"
-  method_option :daemon,      type: :boolean, desc: 'Run as a system daemon'
-  method_option :environment, type: :string,  desc: 'Specifiy which environment to deploy (default: master)'
+  method_option :noop,        :type => :boolean, :desc => 'No changes mode (note: does change checked out artifact, but no Puppet changes)'
+  method_option :force,       :type => :boolean, :desc => 'Ignore existing versions, re-apply every time'
+  method_option :minimal,     :type => :boolean, :desc => "Don't run Puppet unless the artifact has changed"
+  method_option :daemon,      :type => :boolean, :desc => 'Run as a system daemon'
+  method_option :environment, :type => :string,  :desc => 'Specifiy which environment to deploy (default: master)'
   def apply
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
@@ -179,8 +179,8 @@ class CLI < Thor
   end
 
   desc 'bootstrap', 'Generate a user-data bootstrap script for a node'
-  method_option :template, type: :string, desc: 'The template you want to generate'
-  method_option :base64, type: :boolean, desc: 'Output in base64 format'
+  method_option :template, :type => :string, :desc => 'The template you want to generate'
+  method_option :base64, :type => :boolean, :desc => 'Output in base64 format'
   def bootstrap
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
@@ -216,8 +216,8 @@ class CLI < Thor
   end
 
   desc 'packer', 'Generate a packer template for a particular provider with OS bootstrap script included'
-  method_option :template, type: :string, desc: 'The template you want to generate'
-  method_option :file, type: :string, desc: 'File to write the generated packer template into'
+  method_option :template, :type => :string, :desc => 'The template you want to generate'
+  method_option :file, :type => :string, :desc => 'File to write the generated packer template into'
   def packer
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
@@ -256,7 +256,7 @@ class CLI < Thor
   ## Other Commands
 
   desc 'setup', 'Write a template configuration file'
-  method_option :force, type: :boolean, desc: 'Replace an existing config file'
+  method_option :force, :type => :boolean, :desc => 'Replace an existing config file'
   def setup
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]

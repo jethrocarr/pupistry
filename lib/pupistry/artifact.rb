@@ -78,7 +78,7 @@ module Pupistry
       contents  = s3.download 'manifest.latest.yaml'
 
       if contents
-        manifest = YAML.load(contents, safe: true, raise_on_unknown_tag: true)
+        manifest = YAML.load(contents, :safe => true, :raise_on_unknown_tag => true)
 
         if defined? manifest['version']
           # We have a manifest version supplied, however since the manifest
@@ -114,7 +114,7 @@ module Pupistry
 
       # Read the symlink information to get the latest version
       if File.exist?($config['general']['app_cache'] + '/artifacts/manifest.latest.yaml')
-        manifest    = YAML.load(File.open($config['general']['app_cache'] + '/artifacts/manifest.latest.yaml'), safe: true, raise_on_unknown_tag: true)
+        manifest    = YAML.load(File.open($config['general']['app_cache'] + '/artifacts/manifest.latest.yaml'), :safe => true, :raise_on_unknown_tag => true)
         @checksum   = manifest['version']
       else
         $logger.error 'No artifact has been built yet. You need to run pupistry build first?'
@@ -126,14 +126,14 @@ module Pupistry
       # Fetch the current version that is installed.
 
       # Make sure the Puppetcode install directory exists
-      unless Dir.exist?($config['agent']['puppetcode'])
+      unless File.directory?($config['agent']['puppetcode'])
         $logger.warn "The destination path of #{$config['agent']['puppetcode']} does not appear to exist or is not readable"
         return false
       end
 
       # Look for a manifest file in the directory and read the version from it.
       if File.exist?($config['agent']['puppetcode'] + '/manifest.pupistry.yaml')
-        manifest = YAML.load(File.open($config['agent']['puppetcode'] + '/manifest.pupistry.yaml'), safe: true, raise_on_unknown_tag: true)
+        manifest = YAML.load(File.open($config['agent']['puppetcode'] + '/manifest.pupistry.yaml'), :safe => true, :raise_on_unknown_tag => true)
 
         return manifest['version']
       else
@@ -159,7 +159,7 @@ module Pupistry
       end
 
       # Make sure the download dir/cache exists
-      FileUtils.mkdir_p $config['general']['app_cache'] + '/artifacts/' unless Dir.exist?($config['general']['app_cache'] + '/artifacts/')
+      FileUtils.mkdir_p $config['general']['app_cache'] + '/artifacts/' unless File.directory?($config['general']['app_cache'] + '/artifacts/')
 
       # Download files if they don't already exist
       if File.exist?($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml") &&
@@ -349,10 +349,10 @@ module Pupistry
       begin
         FileUtils.ln_s("manifest.#{@checksum}.yaml",
                        "#{$config['general']['app_cache']}/artifacts/manifest.latest.yaml",
-                       force: true)
+                       :force => true)
         FileUtils.ln_s("artifact.#{@checksum}.tar.gz",
                        "#{$config['general']['app_cache']}/artifacts/artifact.latest.tar.gz",
-                       force: true)
+                       :force => true)
       rescue StandardError => e
         $logger.fatal 'Something weird went really wrong trying to symlink the latest artifacts'
         raise e
@@ -423,7 +423,7 @@ module Pupistry
       end
 
       # Make sure the artifact has been unpacked
-      unless Dir.exist?($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}")
+      unless File.directory?($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}")
         $logger.error "The unpacked directory expected for #{@checksum} does not appear to exist or is not readable"
         fail 'Fatal unexpected error'
       end
@@ -433,7 +433,7 @@ module Pupistry
       $logger.error 'Installation not proceeding due to issues cleaning/prepping destination dir' unless clean_install
 
       # Make sure the destination directory exists
-      unless Dir.exist?($config['agent']['puppetcode'])
+      unless File.directory?($config['agent']['puppetcode'])
         $logger.error "The destination path of #{$config['agent']['puppetcode']} does not appear to exist or is not readable"
         fail 'Fatal unexpected error'
       end
@@ -465,8 +465,8 @@ module Pupistry
         else
           $logger.debug "Cleaning up #{$config['agent']['puppetcode']} directory"
 
-          if Dir.exist?($config['agent']['puppetcode'])
-            FileUtils.rm_r Dir.glob($config['agent']['puppetcode'] + '/*'), secure: true
+          if File.directory?($config['agent']['puppetcode'])
+            FileUtils.rm_r Dir.glob($config['agent']['puppetcode'] + '/*'), :secure => true
           else
             FileUtils.mkdir_p $config['agent']['puppetcode']
             FileUtils.chmod(0700, $config['agent']['puppetcode'])
@@ -483,9 +483,9 @@ module Pupistry
 
       fail 'Application bug, trying to unpack no artifact' unless defined? @checksum
 
-      if Dir.exist?($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}/")
+      if File.directory?($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}/")
         $logger.debug "Cleaning up #{$config['general']['app_cache']}/artifacts/unpacked.#{@checksum}..."
-        FileUtils.rm_r $config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}", secure: true
+        FileUtils.rm_r $config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}", :secure => true
         return true
       else
         $logger.debug 'Nothing to cleanup (selected artifact is not currently unpacked)'

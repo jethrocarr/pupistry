@@ -30,10 +30,10 @@ module Pupistry
           $logger.debug 'Loading AWS credentials from configuration file'
 
           AWS.config(
-            access_key_id:     $config[mode]['access_key_id'],
-            secret_access_key: $config[mode]['secret_access_key'],
-            region:            $config[mode]['region'],
-            proxy_uri:         $config[mode]['proxy_uri']
+            :access_key_id =>     $config[mode]['access_key_id'],
+            :secret_access_key => $config[mode]['secret_access_key'],
+            :region =>       $config[mode]['region'],
+            :proxy_uri =>       $config[mode]['proxy_uri']
           )
         end
       else
@@ -55,7 +55,7 @@ module Pupistry
         s3_obj      = @s3.buckets[$config['general']['s3_bucket']].objects[s3_obj_name]
 
         # Perform S3 upload
-        s3_obj.write(file: src)
+        s3_obj.write(file => src)
 
       rescue AWS::S3::Errors::NoSuchBucket
         $logger.fatal "S3 bucket #{$config['general']['s3_bucket']} does not exist"

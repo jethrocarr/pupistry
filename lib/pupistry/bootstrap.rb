@@ -15,7 +15,7 @@ module Pupistry
       # in the current working directory, or if we are an installed gem, we
       # can try the gem's installed path.
 
-      if Dir.exist?('resources/bootstrap/')
+      if File.directory?('resources/bootstrap/')
         # Use local PWD version first if possible
         @template_dir = Dir.pwd
       else
@@ -30,7 +30,7 @@ module Pupistry
 
       @template_dir = @template_dir.chomp('/') + '/resources/bootstrap/'
 
-      if Dir.exist?(@template_dir)
+      if File.directory?(@template_dir)
         $logger.debug "Using directory #{@template_dir} for bootstrap templates"
       else
         $logger.error "Unable to find templates dir at #{@template_dir}, unable to proceed."
@@ -60,17 +60,17 @@ module Pupistry
 
       # Assume values we care about
       template_values = {
-        s3_bucket: $config['general']['s3_bucket'],
-        s3_prefix: $config['general']['s3_prefix'],
-        gpg_disable: $config['general']['gpg_disable'],
-        gpg_signing_key: $config['general']['gpg_signing_key'],
-        puppetcode: $config['agent']['puppetcode'],
-        access_key_id: $config['agent']['access_key_id'],
-        secret_access_key: $config['agent']['secret_access_key'],
-        region: $config['agent']['region'],
-        proxy_uri: $config['agent']['proxy_uri'],
-        daemon_frequency: $config['agent']['daemon_frequency'],
-        daemon_minimal: $config['agent']['daemon_minimal']
+        s3_bucket => $config['general']['s3_bucket'],
+        s3_prefix => $config['general']['s3_prefix'],
+        gpg_disable => $config['general']['gpg_disable'],
+        gpg_signing_key => $config['general']['gpg_signing_key'],
+        puppetcode => $config['agent']['puppetcode'],
+        access_key_id => $config['agent']['access_key_id'],
+        secret_access_key => $config['agent']['secret_access_key'],
+        region => $config['agent']['region'],
+        proxy_uri => $config['agent']['proxy_uri'],
+        daemon_frequency => $config['agent']['daemon_frequency'],
+        daemon_minimal => $config['agent']['daemon_minimal']
       }
 
       # Generate template using ERB

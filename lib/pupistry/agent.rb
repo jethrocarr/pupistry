@@ -33,7 +33,7 @@ module Pupistry
 
         scheduler = Rufus::Scheduler.new
 
-        scheduler.every "#{$config['agent']['daemon_frequency']}s", overlap: false, timeout: '1d', first_at: Time.now + 1 do
+        scheduler.every "#{$config['agent']['daemon_frequency']}s", :overlap => false, :timeout => '1d', :first_at => Time.now + 1 do
           $logger.info "Triggering another Pupistry run (#{$config['agent']['daemon_frequency']}s)"
           apply options_new
         end
@@ -127,7 +127,7 @@ module Pupistry
         environment = 'master'
       end
 
-      unless Dir.exist?("#{$config['agent']['puppetcode']}/#{environment}")
+      unless File.directory?("#{$config['agent']['puppetcode']}/#{environment}")
         $logger.fatal "The requested branch/environment of #{environment} does not exist, unable to run Puppet"
         return false
       end

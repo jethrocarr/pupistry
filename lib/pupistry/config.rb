@@ -22,7 +22,7 @@ module Pupistry
       end
 
       begin
-        $config = YAML.load(File.open(file), safe: true, raise_on_unknown_tag: true)
+        $config = YAML.load(File.open(file), :safe => true, :raise_on_unknown_tag => true)
       rescue => ex
         $logger.fatal 'The supplied file is not a valid YAML configuration file'
         $logger.debug ex.message
@@ -48,7 +48,7 @@ module Pupistry
       # Make sure cache directory exists, create it otherwise
       $config['general']['app_cache'] = File.expand_path($config['general']['app_cache']).chomp('/')
 
-      unless Dir.exist?($config['general']['app_cache'])
+      unless File.exists?($config['general']['app_cache'])
         begin
           FileUtils.mkdir_p($config['general']['app_cache'])
           FileUtils.chmod(0700, $config['general']['app_cache']) # Generally only the user running Pupistry should have access

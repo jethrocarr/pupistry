@@ -124,7 +124,7 @@ module Pupistry
     # Generally we should clean up old signature files before and after using them
     #
     def signature_cleanup
-      FileUtils.rm("#{$config['general']['app_cache']}/artifacts/artifact.#{@checksum}.tar.gz.sig", force: true)
+      FileUtils.rm("#{$config['general']['app_cache']}/artifacts/artifact.#{@checksum}.tar.gz.sig", :force => true)
     end
 
     # Extract the signature from the manifest file and write it to file in native binary format.
@@ -134,7 +134,7 @@ module Pupistry
     # base64    Encoded signature
     #
     def signature_extract
-      manifest = YAML.load(File.open($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml"), safe: true, raise_on_unknown_tag: true)
+      manifest = YAML.load(File.open($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml"), :safe => true, :raise_on_unknown_tag => true)
 
       if manifest['gpgsig']
         # We have the base64 version
@@ -156,7 +156,7 @@ module Pupistry
     # Save the signature into the manifest file
     #
     def signature_save
-      manifest            = YAML.load(File.open($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml"), safe: true, raise_on_unknown_tag: true)
+      manifest            = YAML.load(File.open($config['general']['app_cache'] + "/artifacts/manifest.#{@checksum}.yaml"), :safe => true, :raise_on_unknown_tag => true)
       manifest['gpgsig']  = @signature
 
       File.open("#{$config['general']['app_cache']}/artifacts/manifest.#{@checksum}.yaml", 'w') do |fh|

@@ -14,7 +14,7 @@ module Pupistry
       # in the current working directory, or if we are an installed gem, we
       # can try the gem's installed path.
 
-      if Dir.exist?('resources/packer/')
+      if File.directory?('resources/packer/')
         # Use local PWD version first if possible
         @template_dir = Dir.pwd
       else
@@ -29,7 +29,7 @@ module Pupistry
 
       @template_dir = @template_dir.chomp('/') + '/resources/packer/'
 
-      if Dir.exist?(@template_dir)
+      if File.directory?(@template_dir)
         $logger.debug "Using directory #{@template_dir} for packer templates"
       else
         $logger.error "Unable to find packer templates dir at #{@template_dir}, unable to proceed."
@@ -77,7 +77,7 @@ module Pupistry
 
       # Pass the values we care about to the template
       template_values = {
-        bootstrap_commands: bootstrap.output_array
+        bootstrap_commands => bootstrap.output_array
       }
 
       # Generate template using ERB
