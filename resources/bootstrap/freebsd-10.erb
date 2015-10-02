@@ -6,7 +6,7 @@
 # Known Issues:
 # * AWS and Digital Ocean issues:
 #   http://www.jethrocarr.com/2015/04/19/freebsd-in-the-cloud/
-# * Puppet and PkgNg issues:
+# * We use Puppet 4 from Ports to avoid limitations in older Puppet 3 release:
 #   https://www.jethrocarr.com/2015/04/22/puppet-3-and-4-on-freebsd/
 # * tcsh makes capturing all the output to syslog difficult, so we don't do it.
 # * We can't rely on Bash, since it's not available in FreeBSD by default.
@@ -16,7 +16,16 @@ setenv PATH /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 
 env ASSUME_ALWAYS_YES=YES pkg bootstrap
 env ASSUME_ALWAYS_YES=YES pkg upgrade --yes
-env ASSUME_ALWAYS_YES=YES pkg install --yes ruby devel/ruby-gems puppet gnupg
+env ASSUME_ALWAYS_YES=YES pkg install --yes ruby devel/ruby-gems gnupg
+
+portsnap fetch
+portsnap extract
+
+cd /usr/ports/ports-mgmt/pkg
+make reinstall BATCH=yes
+
+cd /usr/ports/sysutils/puppet4
+make install BATCH=yes
 
 /usr/local/bin/gem install pupistry
 mkdir -p /usr/local/etc/pupistry
