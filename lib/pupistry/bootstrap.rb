@@ -60,17 +60,17 @@ module Pupistry
 
       # Assume values we care about
       template_values = {
-        s3_bucket => $config['general']['s3_bucket'],
-        s3_prefix => $config['general']['s3_prefix'],
-        gpg_disable => $config['general']['gpg_disable'],
-        gpg_signing_key => $config['general']['gpg_signing_key'],
-        puppetcode => $config['agent']['puppetcode'],
-        access_key_id => $config['agent']['access_key_id'],
-        secret_access_key => $config['agent']['secret_access_key'],
-        region => $config['agent']['region'],
-        proxy_uri => $config['agent']['proxy_uri'],
-        daemon_frequency => $config['agent']['daemon_frequency'],
-        daemon_minimal => $config['agent']['daemon_minimal']
+        :s3_bucket => $config['general']['s3_bucket'],
+        :s3_prefix => $config['general']['s3_prefix'],
+        :gpg_disable => $config['general']['gpg_disable'],
+        :gpg_signing_key => $config['general']['gpg_signing_key'],
+        :puppetcode => $config['agent']['puppetcode'],
+        :access_key_id => $config['agent']['access_key_id'],
+        :secret_access_key => $config['agent']['secret_access_key'],
+        :region => $config['agent']['region'],
+        :proxy_uri => $config['agent']['proxy_uri'],
+        :daemon_frequency => $config['agent']['daemon_frequency'],
+        :daemon_minimal => $config['agent']['daemon_minimal']
       }
 
       # Generate template using ERB
