@@ -55,7 +55,7 @@ module Pupistry
         s3_obj      = @s3.buckets[$config['general']['s3_bucket']].objects[s3_obj_name]
 
         # Perform S3 upload
-        s3_obj.write(file => src)
+        s3_obj.write(:file => src)
 
       rescue AWS::S3::Errors::NoSuchBucket
         $logger.fatal "S3 bucket #{$config['general']['s3_bucket']} does not exist"
