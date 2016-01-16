@@ -6,7 +6,7 @@ require 'pupistry/version'
 Gem::Specification.new do |spec|
   spec.name        = 'pupistry'
   spec.version     = Pupistry::VERSION # See lib/pupistry/version.rb to change version
-  spec.date        = '2015-08-15'
+  spec.date        = '2016-01-16'
   spec.summary     = 'A workflow tool for Puppet Masterless Deployments'
   spec.description = 'Provides security, reliability and consistency to Puppet masterless environments' # rubocop:disable Metrics/LineLength
   spec.authors     = ['Jethro Carr']
