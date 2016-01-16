@@ -147,7 +147,7 @@ class CLI < Thor
     #       Pull requests welcome :-) xoxo
 
     Dir.chdir("#{$config['general']['app_cache']}/artifacts/") do
-      unless system "diff -Nuar unpacked.#{artifact_upstream.checksum} unpacked.#{artifact_current.checksum}"
+      unless system "diff -Nuar --exclude hieracrypt unpacked.#{artifact_upstream.checksum} unpacked.#{artifact_current.checksum}"
       end
     end
 

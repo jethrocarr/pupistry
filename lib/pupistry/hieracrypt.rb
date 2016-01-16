@@ -1,6 +1,7 @@
 # rubocop:disable Style/Documentation, Style/GlobalVars
 require 'rubygems'
 require 'yaml'
+require 'json'
 require 'safe_yaml'
 require 'fileutils'
 require 'base64'
@@ -111,47 +112,127 @@ module Pupistry
                 node = File.basename(node)
 
                 $logger.debug "Found node #{node} for environment #{env}, processing now..."
-                  # Apply the Hiera rules to the directory and get back a list of
-                  # files that would be matched by Hiera
-                  # TODO
-                  $logger.warn "Selective hiera rule enforcement not yet active"
 
-                  # TODO: Special rule needed, if fact == environment and null, set to ${env}
+                begin
+                  # We need to load the JSON-based facts that are appended to the
+                  # cert file. However the JSON parser loses it's shit since it
+                  # doesn't like the header of the cert contents, so we need to
+                  # seek past that ourselves.
+                  json_raw = ""
 
+                  IO.readlines("hieracrypt/nodes/#{node}").each do |line|
+                    unless json_raw.empty?
+                      # Subsequent Lines
+                      json_raw += line
+                    end
 
-                  # Copy all the files to a working directory, maintaining directory
-                  # structure.
-
-                  begin
-                    FileUtils.rm_r "hieradata.#{node}"
-                  rescue Errno::ENOENT
-                    # Normal error if it doesn't exist yet.
+                    if /{/.match(line)
+                      # We have found the first {, must be a valid JSON line
+                      json_raw += line
+                    end
                   end
 
-                  FileUtils.cp_r 'hieradata', "hieracrypt.#{node}"
+                  # Extract the facts from the json
+                  puppet_facts = JSON.load(json_raw)
 
-
-                  # Generate the encrypted file
-                  tar = Pupistry::Config.which_tar
-                  $logger.debug "Using tar at #{tar}"
-
-                  unless system "#{tar} -c -z -f hieracrypt.#{node}.tar.gz hieracrypt.#{node}"
-                    $logger.error 'Unable to create tarball'
-                    fail 'An unexpected error occured when executing tar'
-                  end
-
-                  openssl = "openssl smime -encrypt -binary -aes256 -in hieracrypt.#{node}.tar.gz -out hieracrypt/encrypted/#{node}.tar.gz.enc hieracrypt/nodes/#{node}"
-                  $logger.debug "Executing: #{openssl}"
-
-                  unless system openssl
-                    $logger.error "Generation of encrypted file failed for node #{node}"
-                    fail 'An unexpected error occured when executing openssl'
-                  end
-
-                  # Cleanup Unencrypted
-                  FileUtils.rm_r "hieracrypt.#{node}.tar.gz"
-                  FileUtils.rm_r "hieracrypt.#{node}"
+                rescue Exception => ex
+                  $logger.fatal "Unable to parse the JSON data for host/node #{node}"
+                  fail 'A fatal error occurred when processing HieraCrypt node data'
                 end
+
+
+                # It's common to use the 'environment' fact in Hiera, however
+                # it's going to have been exported as null, since it wouldn't
+                # have been set at time of generation. Hence, if it is there
+                # and it is null, we should set it to the current environment
+                # since we know exactly what it will be because we're inside
+                # the environment :-)
+
+                if defined? puppet_facts['environment']
+                  if puppet_facts['environment'] == nil
+                    puppet_facts['environment'] = env
+                  end
+                end
+
+                
+                # Apply the Hiera rules to the directory and get back a list of
+                # files that would be matched by Hiera. The way we do this, is
+                # by filling in each line in Hiera and essentially turning them
+                # into a glob-able (is this even a word?) pattern which allows
+                # us to determine what files we need to encrypt for this
+                # particular node.
+
+                # Iterate through the Hiera rules for values
+                hiera_rules = []
+                hiera       = YAML.load_file('hiera.yaml', safe: true, raise_on_unknown_tag: true)
+
+                if defined? hiera[':hierarchy']
+                  if hiera[':hierarchy'].is_a?(Array)
+                    for line in hiera[':hierarchy']
+                      # Match syntax of %{::some_kinda_fact}
+                      line.scan(/%{::([[:word:]]*)}/) do |match|
+                        # Replace fact variable with actual value
+                        unless defined? puppet_facts[match[0]]
+                          $logger.warn "hiera.yaml references fact #{match[0]} but this fact doesn't exist in #{node}'s hieracrypt/node/#{node} JSON."
+                          $logger.warn "Possibly out of date data, re-run `pupistry hieracrypt --generate` on the node"
+                        else
+                          line = line.sub("%{::#{match[0]}}", puppet_facts[match[0]])
+                        end
+                      end
+
+                      # Add processed line to the rules file
+                      hiera_rules.push(line)
+                    end
+                  else
+                    $logger.error "Use the array format of the hierachy entry in Hiera, string format not supported because why would you?"
+                  end
+                end
+
+                # We have the rules from Hiera for this machine, let's run
+                # through them as globs and copy each match to a new location.
+                begin
+                  FileUtils.rm_r "hieracrypt.#{node}"
+                rescue Errno::ENOENT
+                  # Normal error if it doesn't exist yet.
+                end
+
+                FileUtils.mkdir "hieracrypt.#{node}"
+
+                $logger.debug "Copying relevant hiera data files for #{node}..."
+
+                hiera_rules.each do |rule|
+                  for file in Dir.glob("hieradata/#{rule}.*")
+                    $logger.debug " - #{file}"
+
+                    file_rel = file.sub("hieradata/", "")
+                    #FileUtils.mkdir_p  "hieracrypt.#{node}/#{File.dirname(file_rel)}"
+                    FileUtils.mkdir_p  "hieracrypt.#{node}/#{File.dirname(file_rel)}"
+                    FileUtils.cp file, "hieracrypt.#{node}/#{file_rel}"
+                  end
+                end
+
+
+                # Generate the encrypted file
+                tar = Pupistry::Config.which_tar
+                $logger.debug "Using tar at #{tar}"
+
+                unless system "#{tar} -c -z -f hieracrypt.#{node}.tar.gz hieracrypt.#{node}"
+                  $logger.error 'Unable to create tarball'
+                  fail 'An unexpected error occured when executing tar'
+                end
+
+                openssl = "openssl smime -encrypt -binary -aes256 -in hieracrypt.#{node}.tar.gz -out hieracrypt/encrypted/#{node}.tar.gz.enc hieracrypt/nodes/#{node}"
+                $logger.debug "Executing: #{openssl}"
+
+                unless system openssl
+                  $logger.error "Generation of encrypted file failed for node #{node}"
+                  fail 'An unexpected error occured when executing openssl'
+                end
+
+                # Cleanup Unencrypted
+                FileUtils.rm_r "hieracrypt.#{node}.tar.gz"
+                FileUtils.rm_r "hieracrypt.#{node}"
+              end
             else
               $logger.warn "No nodes could be found for branch #{env}, no encryption can take place there."
               break
