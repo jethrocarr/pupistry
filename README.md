@@ -457,6 +457,56 @@ would be from you accidentally sharing your IAM credentials in the wrong place,
 or an exploited build server.
 
 
+# Securing Hirea with HieraCrypt
+
+In a standard Puppet master situation, the Puppet master parses the Hiera data
+and then passes only the values that apply to a particular host to it. But with
+masterless Puppet, all machines get a full copy of Hiera data, which could be a
+major issue if one box gets expoited and the contents leaked. Generally it goes
+against good practise and damanges the isolation ability of VMs if you give all
+the VMs enough information to do some serious damage to themselves.
+
+By default an out-of-the-box Pupistry installation suffers this limitation like
+most master-less Puppet solutions. However, there is an optional feature built
+into Pupistry called "HieraCrypt" which can be used to encrypt data and prevent
+excessive exposure of information to nodes.
+
+The solutions works, by generating a cert on each node you use with the
+`pupistry hieracrypt --generate` parameter and saving the output into your
+puppetcode repository at `hieracrypt/nodes/HOSTNAME`. This output includes a
+x509 cert made against the host's SSH RSA host key and a JSON array of all
+the facter facts on that host that correlate to values inside the hiera.yaml
+file.
+
+When you run Pupistry on your build workstation, it parses the hiera.yaml file
+for each environment and generates a match of files per-node. It then encrypts
+these files and creates an encrypted package for each node that only they can
+decrypt.
+
+For example, if your hiera.yaml file looks like:
+
+    :hierarchy:
+      - "environments/%{::environment}"
+      - "nodes/%{::hostname}"
+      - common
+
+And your hieradata directory looks like:
+
+    hieradata/
+    hieradata/common.yaml
+    hieradata/environments
+    hieradata/nodes
+    hieradata/nodes/testhost.yaml
+
+When Pupistry builds the artifact, it will include the `common.yaml` file for
+all nodes, however the `testhost.yaml` file will only be included for the
+server with that hostname.
+
+All servers still get the encrypted data for all the other nodes as they're
+shipped as part of the artifact, but nodes can only decrypt the data signed
+against their key.
+
+
 # Caveats & Future Plans
 
 ## Use r10k
@@ -496,26 +546,6 @@ designed for both large and small users so does not mandate it.
 It would be possible to use Pupistry as part of your CD process and if you
 decide to do so, a pull request to better support CD systems out-of-the-box
 would be welcome.
-
-
-## Hiera Security Still Sucks
-
-In a standard Puppet master situation, the Puppet master parses the Hiera data
-and then passes only the values that apply to a particular host to it. But with
-masterless Puppet, all machines get a full copy of Hiera data, which could be a
-major issue if one box gets expoited and the contents leaked. Generally it goes
-against good practise and damanges the isolation ability of VMs if you give all
-the VMs enough information to do some serious damage to themselves.
-
-Pupistry does not yet have any solution for it and it remains a fundamental
-limitation of the Puppet masterless approach. Longer term, we could potentially
-craft a solution that customises the artifacts per-machine to fix this security
-gap, but there's no proper solution currently.
-
-If you have an environment where you need to send lots of sensitive values to
-your servers, a traditional master-full Puppet environment may be a better
-solution for this reason. But if you can architect to avoid this or have no
-critical secrets in Hiera, Pupistry should be good for you.
 
 
 ## PuppetDB

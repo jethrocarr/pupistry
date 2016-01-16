@@ -337,6 +337,11 @@ module Pupistry
           $logger.error "This artifact version (#{@checksum}) has already been built, nothing todo."
           $logger.error "Did you remember to \"git push\" your module changes?"
 
+          # TODO: Unfortunatly Hieracrypt breaks this, since the encrypted Hieradata is different
+          # on every run, which results in the checksum always being different even if nothing in
+          # the repo itself has changed. We need a proper fix for this at some stage, for now it's
+          # covered in the readme notes for HieraCrypt as a flaw.
+
           # Cleanup temp file
           FileUtils.rm($config['general']['app_cache'] + '/artifacts/artifact.temp.tar')
           exit 0
