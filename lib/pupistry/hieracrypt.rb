@@ -280,7 +280,7 @@ module Pupistry
                 $logger.info "Found encrypted Hieradata for #{hostname} in #{env} branch"
 
                 # Perform decryption of this host.
-                openssl = "openssl smime -decrypt -inkey #{ssh_host_rsa_key} < hieracrypt/encrypted/#{hostname}.tar.gz.enc | tar -xz"
+                openssl = "openssl smime -decrypt -inkey #{ssh_host_rsa_key} < hieracrypt/encrypted/#{hostname}.tar.gz.enc | tar -xz -f -"
 
                 unless system openssl
                   $logger.error "A fault occured trying to decrypt the data for #{hostname}"
