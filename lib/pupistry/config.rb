@@ -4,6 +4,7 @@ require 'fileutils'
 require 'tempfile'
 require 'yaml'
 require 'safe_yaml'
+require 'whichr'
 
 module Pupistry
   # Pupistry::Config
@@ -115,6 +116,16 @@ module Pupistry
 
       load(config)
     end
+
+    # Return which tar binary to use.
+    def self.which_tar
+        # Try to use GNU tar if present to work around weird issues with some
+        # versions of BSD tar when using the tar files with GNU tar subsequently.
+        tar = RubyWhich.new.which('gtar').first || RubyWhich.new.which('gnutar').first || 'tar'
+
+        return tar
+    end
+
   end
 end
 # vim:shiftwidth=2:tabstop=2:softtabstop=2:expandtab:smartindent

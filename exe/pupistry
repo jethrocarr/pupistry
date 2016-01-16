@@ -77,6 +77,7 @@ class CLI < Thor
       artifact = Pupistry::Artifact.new
 
       artifact.fetch_r10k
+      artifact.hieracrypt_encrypt
       artifact.build_artifact
 
       puts '--'
@@ -252,6 +253,31 @@ class CLI < Thor
     end
   end
 
+  ## Hieracrypt Feature
+
+  desc 'hieracrypt', 'Manage the encryption of Hiera data to securely restrict access from nodes'
+  method_option :generate, type: :boolean, desc: 'Generate an export of public cert and facts for Hieracrypt usage.'
+  def hieracrypt
+    # Thor seems to force class options to be defined repeatedly? :-/
+    if options[:verbose]
+      $logger.level = Logger::DEBUG
+    else
+      $logger.level = Logger::INFO
+    end
+
+    if options[:config]
+      Pupistry::Config.load(options[:config])
+    else
+      Pupistry::Config.find_and_load
+    end
+
+    # TODO
+    if options[:generate]
+      Pupistry::HieraCrypt.generate_nodedata
+    else
+      puts "Run `pupistry hieracrypt --generate` on each node to get back a data file to be saved into puppetcode"
+    end
+  end
 
   ## Other Commands
 

@@ -83,3 +83,18 @@ build:
   proxy_uri:
 
 
+  # Enable the HieraCrypt feature
+  #
+  # Note - Once enabled, all your servers must have their definition added,
+  # otherwise they will not recieve any Hiera information as it will no longer
+  # be delivered in an unencrypted form.
+  #
+  # You will want to run `pupistry hieracrypt --generate` on each node to
+  # generate a file which needs to be saved into `hieracrypt/nodes/hostname`
+  # in your puppetcode repo (right alongside the `hieradata/` directory).
+  #
+  # If you later decide to disable hieracrypt, you should remove the entire 
+  # `hieracrypt` directory to avoid confusion.
+  #
+  hieracrypt: false
+

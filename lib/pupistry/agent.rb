@@ -89,6 +89,7 @@ module Pupistry
 
         artifact.fetch_artifact
         artifact.unpack
+        artifact.hieracrypt_decrypt
 
         unless artifact.install
           $logger.fatal 'An unexpected error happened when installing the latest artifact, cancelling Puppet run'

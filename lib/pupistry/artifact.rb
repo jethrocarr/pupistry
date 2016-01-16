@@ -6,7 +6,6 @@ require 'time'
 require 'digest'
 require 'fileutils'
 require 'base64'
-require 'whichr'
 
 module Pupistry
   # Pupistry::Artifact
@@ -172,6 +171,27 @@ module Pupistry
       end
     end
 
+    def hieracrypt_encrypt
+      # Stub function, since HieraCrypt has no association with the actual
+      # artifact file, but rather the post-r10k checked data, it could be
+      # invoked directly. However it's worth wrapping here incase we ever
+      # do change this behavior.
+
+      Pupistry::HieraCrypt.encrypt_hieradata
+
+    end
+
+    def hieracrypt_decrypt
+      # Decrypt any encrypted Hieradata inside the currently unpacked artifact
+      # before it gets copied to the installation location.
+
+      if defined? @checksum
+        Pupistry::HieraCrypt.decrypt_hieradata $config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}/puppetcode"
+      else
+        $logger.warn "Tried to request hieracrypt_decrypt on no artifact."
+      end
+
+    end
     def push_artifact
       # The push step involves 2 steps:
       # 1. GPG sign the artifact and write it into the manifest file
@@ -280,15 +300,26 @@ module Pupistry
         # Make sure there is a directory to write artifacts into
         FileUtils.mkdir_p('artifacts')
 
-        # Try to use GNU tar if present to work around weird issues with some
-        # versions of BSD tar when using the tar files with GNU tar subsequently.
-        tar = RubyWhich.new.which('gtar').first || RubyWhich.new.which('gnutar').first || 'tar'
-        $logger.debug "Using tar at #{tar}"
-
         # Build the tar file - we delibertly don't compress in a single step
         # so that we can grab the checksum, since checksum will always differ
         # post-compression.
-        unless system "#{tar} -c --exclude '.git' -f artifacts/artifact.temp.tar puppetcode/*"
+
+        tar = Pupistry::Config.which_tar
+        $logger.debug "Using tar at #{tar}"
+
+        tar += " -c"
+        tar += " --exclude '.git'"
+        if Pupistry::HieraCrypt.is_enabled?
+          # We want to exclude unencrypted hieradata (duh security) and also the node files (which aren't needed)
+          tar += " --exclude 'hieradata'"
+          tar += " --exclude 'hieracrypt/nodes'"
+        else
+          # Hieracrypt is disable, exclude any old out of date encrypted files
+          tar += " --exclude 'hieracrypt/encrypted'"
+        end
+        tar += " -f artifacts/artifact.temp.tar puppetcode/*"
+
+        unless system tar
           $logger.error 'Unable to create tarball'
           fail 'An unexpected error occured when executing tar'
         end
@@ -386,9 +417,7 @@ module Pupistry
       # Unpack the archive file
       FileUtils.mkdir_p($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}")
       Dir.chdir($config['general']['app_cache'] + "/artifacts/unpacked.#{@checksum}") do
-        # Try to use GNU tar if present to work around weird issues with some
-        # versions of BSD tar when using the tar files with GNU tar subsequently.
-        tar = RubyWhich.new.which('gtar').first || RubyWhich.new.which('gnutar').first || 'tar'
+        tar = Pupistry::Config.which_tar
         $logger.debug "Using tar at #{tar}"
 
         if system "#{tar} -xf ../artifact.#{@checksum}.tar.gz"

@@ -4,6 +4,7 @@ require 'pupistry/artifact'
 require 'pupistry/bootstrap'
 require 'pupistry/config'
 require 'pupistry/gpg'
+require 'pupistry/hieracrypt'
 require 'pupistry/packer'
 require 'pupistry/storage_aws'
 
