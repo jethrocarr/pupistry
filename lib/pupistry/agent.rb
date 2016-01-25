@@ -142,7 +142,7 @@ module Pupistry
       puppet_cmd += " --environment #{environment}"
       puppet_cmd += " --confdir #{$config['agent']['puppetcode']}"
       puppet_cmd += " --environmentpath #{$config['agent']['puppetcode']}"
-      puppet_cmd += " --modulepath #{$config['agent']['puppetcode']}/#{environment}/modules/"
+      puppet_cmd += " --modulepath #{build_modulepath(environment)}"
       puppet_cmd += " --hiera_config #{$config['agent']['puppetcode']}/#{environment}/hiera.yaml"
       puppet_cmd += " #{$config['agent']['puppetcode']}/#{environment}/manifests/site.pp"
 
@@ -151,6 +151,33 @@ module Pupistry
 
       $logger.error 'An unexpected issue occured when running puppet' unless system puppet_cmd
     end
+ 
+    def self.build_modulepath(environment)
+
+      environment_path = "#{$config['agent']['puppetcode']}/#{environment}"
+      environment_conf = "#{environment_path}/environment.conf"
+
+      configured_paths = []
+
+      if File.exist?(environment_conf)
+        $logger.debug "Adding modulepath config from '#{environment_path}'"
+
+        File.open(environment_conf, 'r').readlines.each do |line|
+          if line !~ /^\s*#/ && /^(.*)=(.*)/ =~ line
+            key, val = $1.strip, $2.strip
+            configured_paths = val.split(':') if key == 'modulepath'
+          end
+        end
+      end
+
+      modulepaths = configured_paths.map { |path| File.expand_path(path, environment_path) }
+
+      # Ensure '<environment_path>/modules' in modulepath.
+      ensure_path = File.expand_path('modules', environment_path)
+      modulepaths.insert(0, ensure_path) unless modulepaths.include? ensure_path
+
+      modulepaths.join(File::PATH_SEPARATOR)
+    end 
   end
 end
 
