@@ -47,11 +47,11 @@ module Pupistry
       end
     end
 
-    def build(template)
+    def build(template, environment)
       # Build a template with the configured parameters already to go and save
       # into the object, so it can be outputted in the desired format.
 
-      $logger.debug "Generating a bootstrap script for #{template}"
+      $logger.info "Generating a bootstrap script for #{template} with environment #{environment}"
 
       unless File.exist?("#{@template_dir}/#{template}.erb")
         $logger.error 'The requested template does not exist, unable to build'
@@ -70,7 +70,8 @@ module Pupistry
         region: $config['agent']['region'],
         proxy_uri: $config['agent']['proxy_uri'],
         daemon_frequency: $config['agent']['daemon_frequency'],
-        daemon_minimal: $config['agent']['daemon_minimal']
+        daemon_minimal: $config['agent']['daemon_minimal'],
+        environment: environment
       }
 
       # Generate template using ERB

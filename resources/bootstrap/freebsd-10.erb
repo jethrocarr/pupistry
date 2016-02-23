@@ -27,7 +27,7 @@ make reinstall BATCH=yes
 cd /usr/ports/sysutils/puppet4
 make install BATCH=yes
 
-/usr/local/bin/gem install pupistry
+/usr/local/bin/gem install pupistry --no-ri --no-rdoc
 mkdir -p /usr/local/etc/pupistry
 mkdir -p /usr/local/etc/puppetlabs/code/environments
 cat > /usr/local/etc/pupistry/settings.yaml << EOF
@@ -45,6 +45,7 @@ agent:
   proxy_uri: <%= proxy_uri %>
   daemon_frequency: <%= daemon_frequency %>
   daemon_minimal: <%= daemon_minimal %>
+  environment: <%= environment %>
 EOF
 chmod 700 /usr/local/etc/pupistry
 chmod 700 /usr/local/etc/puppetlabs/code/environments
