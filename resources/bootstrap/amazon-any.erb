@@ -16,9 +16,9 @@ yum install --assumeyes puppet3 ruby-devel rubygems gcc zlib-devel libxml2-devel
 
 # Not sure why this doesn't get pulled down properly, maybe it's core and
 # Amazon didn't package it properly? Need it for Thor which is used by Pupistry
-gem install io-console
+gem install io-console --no-ri --no-rdoc
 
-gem install pupistry
+gem install pupistry --no-ri --no-rdoc
 mkdir -p /etc/pupistry
 mkdir -p <%= puppetcode %>
 cat > /etc/pupistry/settings.yaml << "EOF"
@@ -36,6 +36,7 @@ agent:
   proxy_uri: <%= proxy_uri %>
   daemon_frequency: <%= daemon_frequency %>
   daemon_minimal: <%= daemon_minimal %>
+  environment: <%= environment %>
 EOF
 chmod 700 /etc/pupistry/settings.yaml
 chmod 700 <%= puppetcode %>

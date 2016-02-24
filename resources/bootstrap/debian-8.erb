@@ -15,7 +15,7 @@ apt-get -y upgrade
 
 apt-get install -y puppet ruby ruby-dev zlib1g-dev libxml2-dev gcc make patch gnupg2
 
-gem install pupistry
+gem install pupistry --no-ri --no-rdoc
 mkdir -p /etc/pupistry
 mkdir -p <%= puppetcode %>
 cat > /etc/pupistry/settings.yaml << "EOF"
@@ -33,6 +33,7 @@ agent:
   proxy_uri: <%= proxy_uri %>
   daemon_frequency: <%= daemon_frequency %>
   daemon_minimal: <%= daemon_minimal %>
+  environment: <%= environment %>
 EOF
 chmod 700 /etc/pupistry/settings.yaml
 chmod 700 <%= puppetcode %>

@@ -121,12 +121,10 @@ module Pupistry
 
       end
 
-      # Check if the requested environment/branch actually exists
-      if options[:environment]
-        environment = options[:environment]
-      else
-        environment = 'master'
-      end
+      # If the environment has been specified, use it.
+      environment = $config['agent']['environment'] || 'master'
+      # override if environment is supplied on CLI
+      environment = options["environment"] || environment
 
       unless Dir.exist?("#{$config['agent']['puppetcode']}/#{environment}")
         $logger.fatal "The requested branch/environment of #{environment} does not exist, unable to run Puppet"

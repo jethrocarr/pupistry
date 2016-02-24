@@ -182,6 +182,7 @@ class CLI < Thor
   desc 'bootstrap', 'Generate a user-data bootstrap script for a node'
   method_option :template, type: :string, desc: 'The template you want to generate'
   method_option :base64, type: :boolean, desc: 'Output in base64 format'
+  method_option :environment, type: :string, desc: 'Environment to run puppet in'
   def bootstrap
     # Thor seems to force class options to be defined repeatedly? :-/
     if options[:verbose]
@@ -197,10 +198,11 @@ class CLI < Thor
     end
 
     if options[:template]
-      $logger.info "Generating bootstrap template #{options[:template]}"
+      $logger.debug "Generating bootstrap template #{options[:template]}"
 
+      environment = options[:environment] || 'master'
       templates = Pupistry::Bootstrap.new
-      templates.build options[:template]
+      templates.build options[:template], environment
 
       if options[:base64]
         templates.output_base64

@@ -16,7 +16,7 @@ rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-fedora-`lsb_release -sr`.
 yum update --assumeyes
 yum install --assumeyes puppet ruby-devel rubygems gcc zlib-devel libxml2-devel patch gnupg
 
-gem install pupistry
+gem install pupistry --no-ri --no-rdoc
 mkdir -p /etc/pupistry
 mkdir -p <%= puppetcode %>
 cat > /etc/pupistry/settings.yaml << "EOF"
@@ -34,6 +34,7 @@ agent:
   proxy_uri: <%= proxy_uri %>
   daemon_frequency: <%= daemon_frequency %>
   daemon_minimal: <%= daemon_minimal %>
+  environment: <%= environment %>
 EOF
 chmod 700 /etc/pupistry/settings.yaml
 chmod 700 <%= puppetcode %>
