@@ -42,7 +42,15 @@ module Pupistry
       end
 
       # Setup S3 bucket
-      @s3     = AWS::S3.new
+      if defined? $config['general']['s3_endpoint']
+        $logger.debug 'Connecting to alternative endpoint ' + $config['general']['s3_endpoint']
+	 @s3 = AWS::S3.new(
+	         s3_endpoint: $config['general']['s3_endpoint'],
+	         s3_force_path_style: true,
+	       )
+       else
+        @s3     = AWS::S3.new
+       end
       @bucket = @s3.buckets[$config[mode]['s3_bucket']]
     end
 
