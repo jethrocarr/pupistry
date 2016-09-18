@@ -152,6 +152,10 @@ module Pupistry
                   if puppet_facts['environment'] == nil
                     puppet_facts['environment'] = env
                   end
+
+                  if puppet_facts['environment'] == ""
+                    puppet_facts['environment'] = env
+                  end
                 end
 
                 
