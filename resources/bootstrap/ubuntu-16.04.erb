@@ -1,12 +1,9 @@
 #!/bin/bash -x
-# Bootstrap for Ubuntu 16.04 LTS (Xenial Xerus)
+# Bootstrap for Ubuntu 16.04 LTS (Xenial)
 # It will *probably* work with other Ubuntu versions supported by Puppetlabs.
 # It *might* work with other Ubuntu or Debian derived systems.
 (
 exec 1> >(logger -s -t user-data) 2>&1
-
-wget -O /tmp/puppetlabs-release.deb https://apt.puppetlabs.com/puppetlabs-release-`lsb_release -sc`.deb
-dpkg -i /tmp/puppetlabs-release.deb
 
 export DEBIAN_FRONTEND=noninteractive
 
