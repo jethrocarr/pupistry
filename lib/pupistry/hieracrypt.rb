@@ -202,12 +202,16 @@ module Pupistry
 
                 hiera_rules.each do |rule|
                   for file in Dir.glob("hieradata/#{rule}.*")
-                    $logger.debug " - #{file}"
+                    if /\/\.\.?$/.match(file)
+                      # If we end up with /. or /.. in the glob, exclude.
+                      $logger.debug " - Excluding invalid file #{file}"
+                    else
+                      $logger.debug " - #{file}"
 
-                    file_rel = file.sub("hieradata/", "")
-                    #FileUtils.mkdir_p  "hieracrypt.#{node}/#{File.dirname(file_rel)}"
-                    FileUtils.mkdir_p  "hieracrypt.#{node}/#{File.dirname(file_rel)}"
-                    FileUtils.cp file, "hieracrypt.#{node}/#{file_rel}"
+                      file_rel = file.sub("hieradata/", "")
+                      FileUtils.mkdir_p  "hieracrypt.#{node}/#{File.dirname(file_rel)}"
+                      FileUtils.cp file, "hieracrypt.#{node}/#{file_rel}"
+                    end
                   end
                 end
 
