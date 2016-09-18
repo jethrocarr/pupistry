@@ -10,10 +10,10 @@ general:
   # the latest version of the artifacts.
   app_cache: ~/.pupistry/cache
 
-  # If this is defined, it will talk to this endpoint instead of public
-  # AWS. You want to use this if you are using an app such as minio
-  # Set to undefined if you want to use AWS S3
-  s3_endpoint: s3.example.com
+  # Some users like to use Pupistry with a non-AWS S3 endpoint such as Minio
+  # which requires setting an alternative endpoint below. DO NOT UNCOMMENT IF
+  # USING STANDARD AWS S3.
+  # s3_endpoint: s3.notaws.example.com
   
   # The S3 bucket must be set in order to have a place to push and
   # pull artifact and manifests from. This bucket should be PRIVATE, we
