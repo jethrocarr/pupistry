@@ -30,12 +30,12 @@ Masterless Puppet is a great solution for anyone wanting to avoid scaling issues
 and risk of centralised failure due to a central Puppet master, but it does bring
 a number of issues with it.
 
-1. Having to setup deployer keys to every git repo used is a maintainance headache. Pupistry means only your workstation needs access, which presumably will have access to most/all repos already.
-2. Your system build success is dependent on all the git repos you've used, including any third parties that could vanish. A single missing or broken repo could prevent autoscaling or new machine builds at a critical time. Pupistry's use of artifact files prevents surprises - if you can hit S3, you're sorted.
+1. Having to setup deployer keys to every Git repo used is a maintainance headache. Pupistry means only your workstation needs access, which presumably will have access to most/all repos already.
+2. Your system build success is dependent on all the Git repos you've used, including any third parties that could vanish. A single missing or broken repo could prevent autoscaling or new machine builds at a critical time. Pupistry's use of artifact files prevents surprises - if you can hit S3, you're sorted.
 3. It is easy for malicious code in the third party repos to slip in without noticing. Even if the author themselves is honest, not all repos have proper security like two-factor. Pupistry prevents surprise updates of modules and also has an easy diff feature to see what changed since you last generated an artifact.
-4. Puppet masterless tends to be implemented in many different ways using everyone's own hacky scripts. Pupistry's goal is to create a singular standard approach to masterless, in the same way that `r10k` created a standard approach to git-based Puppet workflows. And this makes things easy - install Pupistry, add the companion Puppet module and run the bootstrap script. Easy!
+4. Puppet masterless tends to be implemented in many different ways using everyone's own hacky scripts. Pupistry's goal is to create a singular standard approach to masterless, in the same way that `r10k` created a standard approach to Git-based Puppet workflows. And this makes things easy - install Pupistry, add the companion Puppet module and run the bootstrap script. Easy!
 5. No dodgy cronjobs running `r10k` and Puppet in weird ways. A simple clean agent with daemon or run-once functionality.
-6. Performance - Go from 30+ seconds `r10k` update checks to 2 second Pupistry update checks. And when there is a change, it's a fast efficent compressed file download from S3 rather than pulling numerious git repos.
+6. Performance - Go from 30+ seconds `r10k` update checks to 2 second Pupistry update checks. And when there is a change, it's a fast efficent compressed file download from S3 rather than pulling numerious Git repos.
 
 
 
@@ -66,8 +66,8 @@ Build a new artifact:
     Tip: Run pupistry diff to see what changed since the last artifact version
 
 
-Note that artifact builds are done from the upstream git repos, so if you
-have made changes, remember to git push first before generating. The tool will
+Note that artifact builds are done from the upstream Git repos, so if you
+have made changes, remember to `git push` first before generating. The tool will
 remind you if it detects nothing has changed since the last run.
 
 Once your artifact is built, you can double check what has changed in the
@@ -566,7 +566,7 @@ author.
 
 # Developing
 
-When developing Pupistry, you can run the git repo copy with:
+When developing Pupistry, you can run the Git repo copy with:
 
     gem install bundler
     bundle install
