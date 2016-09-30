@@ -17,15 +17,15 @@ DO:
 DON'T:
 
 * Use third party respositories or download sites, it needs to be stock vendor OS and packages.
-* Execute code from third party sites (eg no wget http://example.com/malware/myscript.sh)
+* Execute code from third party sites (eg no `wget http://example.com/malware/myscript.sh`)
 * Tie user data to any particular cloud provider unless unavoidable for that platform.
 * Make the script any more complex than it needs to be.
 
 
 # Examples
 
-See the "centos-7" or "ubuntu-14.04" templates for examples on how the bootstrap
-templates should be written. The "fedora-any" template also shows an example of
+See the `centos-7` or `ubuntu-14.04` templates for examples on how the bootstrap
+templates should be written. The `fedora-any` template also shows an example of
 dealing with networking not being ready and also how to handle frequently
 changing distribution versions.
 
