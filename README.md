@@ -4,13 +4,13 @@
 
 Pupistry (puppet + artistry) is a solution for implementing reliable and secure
 masterless puppet deployments by taking Puppet modules assembled by r10k and
-generating compresed and signed archives for distribution to the masterless
+generating compressed and signed archives for distribution to the masterless
 servers.
 
 Pupistry builds on the functionality offered by the r10k workflow but rather
 than requiring the implementing of site-specific custom bootstrap and custom
 workflow mechanisms, Pupistry executes r10k, assembles the combined modules
-and then generates a compress artifact file. It then optionally signs the
+and then generates a compressed artifact file. It then optionally signs the
 artifact with GPG and finally uploads it into an Amazon S3 bucket along with a
 manifest file.
 
@@ -33,7 +33,7 @@ a number of issues with it.
 1. Having to setup deployer keys to every git repo used is a maintainance headache. Pupistry means only your workstation needs access, which presumably will have access to most/all repos already.
 2. Your system build success is dependent on all the git repos you've used, including any third parties that could vanish. A single missing or broken repo could prevent autoscaling or new machine builds at a critical time. Pupistry's use of artifact files prevents surprises - if you can hit S3, you're sorted.
 3. It is easy for malicious code in the third party repos to slip in without noticing. Even if the author themselves is honest, not all repos have proper security like two-factor. Pupistry prevents surprise updates of modules and also has an easy diff feature to see what changed since you last generated an artifact.
-4. Puppet masterless tends to be implemented in many different ways using everyone's own hacky scripts. Pupistry's goal is to create a singular standard/approach to masterless, in the same way that r10k created a standard approach to git-based Puppet workflows. And this makes things easy - install Pupistry, add the companion Puppet module and run the bootstrap script. Easy!
+4. Puppet masterless tends to be implemented in many different ways using everyone's own hacky scripts. Pupistry's goal is to create a singular standard approach to masterless, in the same way that r10k created a standard approach to git-based Puppet workflows. And this makes things easy - install Pupistry, add the companion Puppet module and run the bootstrap script. Easy!
 5. No dodgy cronjobs running r10k and Puppet in weird ways. A simple clean agent with daemon or run-once functionality.
 6. Performance - Go from 30+ seconds r10k update checks to 2 second Pupistry update checks. And when there is a change, it's a fast efficent compressed file download from S3 rather than pulling numerious git repos.
 
@@ -141,7 +141,7 @@ with AWS, you can make it part of the stack itself.
 
 These bootstraps aren't mandatory, if you prefer a different approach you can
 use these as an example and write your own - generally the essential bit is to
-get puppet installed, get pupistry (and deps to build it's gems) installed and
+get puppet installed, get pupistry (and deps to build its gems) installed and
 write the config before finally executing your first Pupistry/Puppet run.
 
 If using AWS and IAM Roles feature, it is acceptable for access_key_id and
@@ -151,12 +151,12 @@ account with read-only access to the configured S3 bucket!
 
 ## Running Puppet on target nodes
 
-Pupistry replaces the need to call Puppet directly. Instead, call Pupistry with
-and it will handle getting the artifact and then executing Puppet for you. It
+Pupistry replaces the need to call Puppet directly. Instead, call Pupistry and
+it will handle getting the artifact and then executing Puppet for you. It
 respects some parameters like --environment and --noop for easy testing of new
 manifests and modules.
 
-At it's simpliest, to apply the current Puppet manifests:
+At its simplest, to apply the current Puppet manifests:
 
     $ pupistry apply
     I, [2015-04-10T00:44:40.623101 #6726]  INFO -- : Pulling latest artifact....
@@ -258,7 +258,7 @@ Once status is CREATE_COMPLETE, you can get all the outputs from the stack with:
 
     aws cloudformation describe-stacks --query "Stacks[*].Outputs[*]" --stack-name pupistry-resources-changeme
 
-You now need to edit `~/.pupistry/settings.yaml` and enter in the equalivent
+You now need to edit `~/.pupistry/settings.yaml` and enter in the equivalent
 OutputValue for the following labels:
 
     general:
@@ -281,7 +281,7 @@ OutputValue for the following labels:
 
 ### Puppet Code Structure
 
-The following is the expected minmum structure of the Puppetcode repository to
+The following is the expected minimum structure of the Puppetcode repository to
 enable it to work with Pupistry:
 
     /Puppetfile
@@ -290,7 +290,7 @@ enable it to work with Pupistry:
 
 Puppetfile is standard r10k and site.pp is standard Puppet. The Hiera config
 is generally normal, but you do need to define a datadir to tell Puppet to look
-where the puppetcode gets unpacked to. Generally the following sample Hiera
+where the puppet code gets unpacked to. Generally the following sample Hiera
 will do the trick:
 
     ---
@@ -320,11 +320,11 @@ You'll notice pretty quickly if something is broken when doing `pupistry apply`
 
 Confused? No worried, check out the sample repo that shows a very simple setup.
 You can copy this and start your own Puppet adventure, just add in your modules
-to Puppetfile and add them to the relevent machines in manifests/site.pp.
+to Puppetfile and add them to the relevant machines in manifests/site.pp.
 
 https://github.com/jethrocarr/pupistry-samplepuppet 
 
-TODO: Longer term intend to add support for various popular structure, but
+TODO: Longer term intend to add support for various popular structures, but
 for now it is what it is. It's not hard, check out bin/puppistry and send
 pull requests.
 
@@ -361,7 +361,7 @@ And include the pupistry module in all your systems:
     }
 
 
-## 4. Building you first node (Bootstrapping)
+## 4. Building your first node (Bootstrapping)
 
 No need for manual configuration of your servers/nodes, you just need to build
 your first artifact with Pupistry (`pupistry build && pupistry push`) and then
@@ -383,7 +383,7 @@ skills to make your node actually do something useful. :-)
 
 ## 5. (optional) Baking an image with Packer
 
-Note that the node initialisation process is still susceptable to weaknesses
+Note that the node initialisation process is still susceptible to weaknesses
 such as a bug in a new version of Puppet or Pupistry, or changes to the OS
 packages. If this is a concern/issue for you and you want complete reliability,
 then use the user data to build a host pre-loaded with Puppet and Pupistry and
@@ -457,7 +457,7 @@ would be from you accidentally sharing your IAM credentials in the wrong place,
 or an exploited build server.
 
 
-# Securing Hirea with HieraCrypt
+# Securing Hiera with HieraCrypt
 
 In a standard Puppet master situation, the Puppet master parses the Hiera data
 and then passes only the values that apply to a particular host to it. But with
@@ -536,7 +536,7 @@ Please see resources/bootstrap/BOOTSTRAP_NOTES.md for more details on how to
 write and debug bootstrap templates.
 
 
-## Continious Deployment
+## Continuous Deployment
 
 A lot of what Pupistry does can also be accomplished by various home-grown
 Continious Deployment (CD) solutions using platforms like Jenkins or Bamboo. CD
