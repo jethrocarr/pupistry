@@ -3,13 +3,13 @@
 [![Build Status](https://travis-ci.org/jethrocarr/pupistry.svg)](https://travis-ci.org/jethrocarr/pupistry)
 
 Pupistry (puppet + artistry) is a solution for implementing reliable and secure
-masterless puppet deployments by taking Puppet modules assembled by r10k and
+masterless puppet deployments by taking Puppet modules assembled by `r10k` and
 generating compressed and signed archives for distribution to the masterless
 servers.
 
-Pupistry builds on the functionality offered by the r10k workflow but rather
+Pupistry builds on the functionality offered by the `r10k` workflow but rather
 than requiring the implementing of site-specific custom bootstrap and custom
-workflow mechanisms, Pupistry executes r10k, assembles the combined modules
+workflow mechanisms, Pupistry executes `r10k`, assembles the combined modules
 and then generates a compressed artifact file. It then optionally signs the
 artifact with GPG and finally uploads it into an Amazon S3 bucket along with a
 manifest file.
@@ -33,9 +33,9 @@ a number of issues with it.
 1. Having to setup deployer keys to every git repo used is a maintainance headache. Pupistry means only your workstation needs access, which presumably will have access to most/all repos already.
 2. Your system build success is dependent on all the git repos you've used, including any third parties that could vanish. A single missing or broken repo could prevent autoscaling or new machine builds at a critical time. Pupistry's use of artifact files prevents surprises - if you can hit S3, you're sorted.
 3. It is easy for malicious code in the third party repos to slip in without noticing. Even if the author themselves is honest, not all repos have proper security like two-factor. Pupistry prevents surprise updates of modules and also has an easy diff feature to see what changed since you last generated an artifact.
-4. Puppet masterless tends to be implemented in many different ways using everyone's own hacky scripts. Pupistry's goal is to create a singular standard approach to masterless, in the same way that r10k created a standard approach to git-based Puppet workflows. And this makes things easy - install Pupistry, add the companion Puppet module and run the bootstrap script. Easy!
-5. No dodgy cronjobs running r10k and Puppet in weird ways. A simple clean agent with daemon or run-once functionality.
-6. Performance - Go from 30+ seconds r10k update checks to 2 second Pupistry update checks. And when there is a change, it's a fast efficent compressed file download from S3 rather than pulling numerious git repos.
+4. Puppet masterless tends to be implemented in many different ways using everyone's own hacky scripts. Pupistry's goal is to create a singular standard approach to masterless, in the same way that `r10k` created a standard approach to git-based Puppet workflows. And this makes things easy - install Pupistry, add the companion Puppet module and run the bootstrap script. Easy!
+5. No dodgy cronjobs running `r10k` and Puppet in weird ways. A simple clean agent with daemon or run-once functionality.
+6. Performance - Go from 30+ seconds `r10k` update checks to 2 second Pupistry update checks. And when there is a change, it's a fast efficent compressed file download from S3 rather than pulling numerious git repos.
 
 
 
@@ -288,7 +288,7 @@ enable it to work with Pupistry:
     /hiera.yaml
     /manifests/site.pp
 
-Puppetfile is standard r10k and site.pp is standard Puppet. The Hiera config
+`Puppetfile` is standard `r10k` and `site.pp` is standard Puppet. The Hiera config
 is generally normal, but you do need to define a datadir to tell Puppet to look
 where the puppet code gets unpacked to. Generally the following sample Hiera
 will do the trick:
@@ -312,7 +312,7 @@ the `datadir` parameter in Hiera to a fixed path and the `puppetcode` parameter
 in Pupistry to be the exact same value, since `%{::settings::confdir}` will
 differ between Pupistry and masterful Puppet.
 
-Pupistry will default to applying the "master" branch if one is not listed, if
+Pupistry will default to applying the `master` branch if one is not listed, if
 you are doing branch-based environments, you can specifiy when bootstrapping
 and override on a per-execution basis with `--environment`.
 
@@ -320,7 +320,7 @@ You'll notice pretty quickly if something is broken when doing `pupistry apply`
 
 Confused? No worried, check out the sample repo that shows a very simple setup.
 You can copy this and start your own Puppet adventure, just add in your modules
-to Puppetfile and add them to the relevant machines in manifests/site.pp.
+to `Puppetfile` and add them to the relevant machines in `manifests/site.pp`.
 
 https://github.com/jethrocarr/pupistry-samplepuppet 
 
@@ -342,9 +342,9 @@ operation.
 You can fetch the module from:
 https://github.com/jethrocarr/puppet-pupistry
 
-If you're doing r10k and Puppet masterless from scratch, this is probably
-something you want to make life easy. With r10k, just add the following to your
-Puppetfile:
+If you're doing `r10k` and Puppet masterless from scratch, this is probably
+something you want to make life easy. With `r10k`, just add the following to your
+`Puppetfile`:
 
     # Install the Pupistry companion module
     mod 'jethrocarr/pupistry'
@@ -429,7 +429,7 @@ https://www.jethrocarr.com/2015/05/10/setting-up-and-using-pupistry
 
 By following this tutorial you can go from nothing, to having a complete up
 and running masterless Puppet environment using Pupistry. It covers the very
-basics of setting up your r10k environment.
+basics of setting up your `r10k` environment.
 
 
 # GPG Notes
@@ -511,7 +511,7 @@ against their key.
 
 ## Use r10k
 
-Currently only an r10k workflow is supported. Pull requests for others (eg
+Currently only an `r10k` workflow is supported. Pull requests for others (eg
 Librarian Puppet) are welcome, but it's not a priority for this author as r10k
 is working nicely.
 
