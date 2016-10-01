@@ -14,7 +14,7 @@ enter your specific details (like desired bucket name) and it will go and build
 a complete setup of the AWS resources needed for using Pupistry that is
 suitable for most end users.
 
-Altneratively if you have complex requirements, feel free to incorporate the
+Alternatively, if you have complex requirements, feel free to incorporate the
 ideas and examples of this stack into your own design.
 
 Building the stack (simple):
@@ -42,8 +42,8 @@ Make sure the stack has finished building/is built:
 
     aws cloudformation describe-stacks --query "Stacks[*].StackStatus" --stack-name pupistry-resources
 
-Status should be "COMPLETE", if it is set to "ROLLBACK" then it has failed to
-build. If set to "CREATE_IN_PROGRESS" then you need to give it more time.
+Status should be `COMPLETE`, if it is set to `ROLLBACK` then it has failed to
+build. If set to `CREATE_IN_PROGRESS` then you need to give it more time.
 
 
 Fetching details from the stack:
