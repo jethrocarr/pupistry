@@ -425,7 +425,7 @@ module Pupistry
         tar = Pupistry::Config.which_tar
         $logger.debug "Using tar at #{tar}"
 
-        if system "#{tar} -xf ../artifact.#{@checksum}.tar.gz"
+        if system "#{tar} -xzf ../artifact.#{@checksum}.tar.gz"
           $logger.debug "Successfully unpacked artifact #{@checksum}"
         else
           $logger.error "Unable to unpack artifact files to #{Dir.pwd}"
