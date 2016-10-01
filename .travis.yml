@@ -1,3 +1,6 @@
+# Note: You can discover list of supported Ruby versions at:
+# http://rubies.travis-ci.org/
+
 language: ruby
 rvm:
   - "2.0.0-p598"
