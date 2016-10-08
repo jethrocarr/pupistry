@@ -1,0 +1,53 @@
+#!/bin/ksh
+
+echo \
+ 'installpath = http://YOURMIRRORHERE/pub/OpenBSD/%c/packages/%a/' \
+ > /etc/pkg.conf
+
+# need iconv for nokogiri gem build
+pkg_add ruby-2.3.1p2 libiconv
+ln -sf /usr/local/bin/ruby23 /usr/local/bin/ruby
+ln -sf /usr/local/bin/erb23 /usr/local/bin/erb
+ln -sf /usr/local/bin/irb23 /usr/local/bin/irb
+ln -sf /usr/local/bin/rdoc23 /usr/local/bin/rdoc
+ln -sf /usr/local/bin/ri23 /usr/local/bin/ri
+ln -sf /usr/local/bin/rake23 /usr/local/bin/rake
+ln -sf /usr/local/bin/gem23 /usr/local/bin/gem
+
+# modify RubyGems defaults so gem executables don't all get names
+# like thor23 and puppet23 and pupistry23 because frankly this
+# sucks and the alternative (moar symlinks) sucks even more
+osdefaults_path=/usr/local/lib/ruby/2.3/rubygems/defaults
+mkdir -p $osdefaults_path
+cat > $osdefaults_path/operating_system.rb << "OSDEFAULTSRB"
+module Gem
+  def self.default_exec_format
+    '%s'
+  end
+end
+OSDEFAULTSRB
+
+gem install puppet pupistry --no-ri --no-rdoc
+
+mkdir -p /etc/pupistry
+mkdir -p <%= puppetcode %>
+cat > /etc/pupistry/settings.yaml << "EOF"
+general:
+  app_cache: ~/.pupistry/cache
+  s3_bucket: <%= s3_bucket %>
+  s3_prefix: <%= s3_prefix %>
+  gpg_disable: <%= gpg_disable %>
+  gpg_signing_key: <%= gpg_signing_key %>
+agent:
+  puppetcode: <%= puppetcode %>
+  access_key_id: <%= access_key_id %>
+  secret_access_key: <%= secret_access_key %>
+  region: <%= region %>
+  proxy_uri: <%= proxy_uri %>
+  daemon_frequency: <%= daemon_frequency %>
+  daemon_minimal: <%= daemon_minimal %>
+  environment: <%= environment %>
+EOF
+chmod 700 /etc/pupistry/settings.yaml
+chmod 700 <%= puppetcode %>
+pupistry apply --verbose
