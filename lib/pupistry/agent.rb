@@ -142,7 +142,7 @@ module Pupistry
       puppet_cmd += " --environmentpath #{$config['agent']['puppetcode']}"
       puppet_cmd += " --modulepath #{build_modulepath(environment)}"
       puppet_cmd += " --hiera_config #{$config['agent']['puppetcode']}/#{environment}/hiera.yaml"
-      puppet_cmd += " #{$config['agent']['puppetcode']}/#{environment}/manifests/site.pp"
+      puppet_cmd += " #{$config['agent']['puppetcode']}/#{environment}/manifests/"
 
       $logger.info 'Executing Puppet...'
       $logger.debug "With: #{puppet_cmd}"
