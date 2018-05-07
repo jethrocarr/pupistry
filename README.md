@@ -127,7 +127,7 @@ nice easy life, Pupistry can generate you a bootstrap script for your platform.
       gpg_disable: true
       gpg_signing_key: XYZXYZ
     agent:
-      puppetcode: /etc/puppet/environents/
+      puppetcode: /etc/puppet/environments/
       access_key_id: 
       secret_access_key: 
       region: ap-southeast-2
