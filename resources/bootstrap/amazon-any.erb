@@ -12,7 +12,14 @@ exec 1> >(logger -s -t user-data) 2>&1
 export PATH=$PATH:/usr/local/bin
 
 yum update --assumeyes
-yum install --assumeyes puppet3 ruby-devel rubygems gcc zlib-devel libxml2-devel patch gnupg2
+
+# Need to install a modern Ruby as the default to support current generation of
+# Pupistry and other common dependencies.
+yum install -y ruby24 ruby24-devel rubygems24
+alternatives --set ruby /usr/bin/ruby2.4
+alternatives --set gem /usr/bin/gem2.4
+
+yum install --assumeyes puppet3 gcc zlib-devel libxml2-devel patch gnupg2
 
 # Not sure why this doesn't get pulled down properly, maybe it's core and
 # Amazon didn't package it properly? Need it for Thor which is used by Pupistry
