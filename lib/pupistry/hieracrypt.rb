@@ -52,7 +52,7 @@ module Pupistry
       unless is_enabled?
         return false
       end
-      
+
       $logger.info "Encrypting Hieradata (HieraCrypt Feature)..."
 
 
@@ -64,7 +64,7 @@ module Pupistry
       #
       puppetcode = $config['general']['app_cache'] + '/puppetcode'
 
-      
+
       # Run through each environment.
       for env in Dir.glob(puppetcode +'/*')
         env = File.basename(env)
@@ -99,7 +99,7 @@ module Pupistry
               $logger.warn "No hieracrypt/nodes directory could be found for branch #{env}, no encryption can take place there."
               break
             end
-            
+
             unless Dir.exists?('hieracrypt/encrypted')
               # We place the encrypted data files in here.
               Dir.mkdir('hieracrypt/encrypted')
@@ -161,7 +161,6 @@ module Pupistry
                     puppet_facts['environment'] = env
                   end
                 end
-
                 
                 # Apply the Hiera rules to the directory and get back a list of
                 # files that would be matched by Hiera. The way we do this, is
@@ -276,7 +275,7 @@ module Pupistry
     #
     def self.decrypt_hieradata puppetcode
       $logger.debug "Decrypting Hieracrypt..."
-      
+
       hostname         = get_hostname             # Facter hostname value
       ssh_host_rsa_key = get_ssh_rsa_private_key  # We generate the SSL cert using the SSH RSA Host key
 
@@ -374,7 +373,7 @@ module Pupistry
 
     def self.facts_for_hiera(path)
       $logger.debug "Searching for facts specified in Hiera rules..."
-            
+
       puppet_facts = []
 
       for env in Dir.entries(path)
