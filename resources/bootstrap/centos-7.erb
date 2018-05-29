@@ -14,7 +14,10 @@ rpm -ivh https://yum.puppetlabs.com/puppetlabs-release-el-7.noarch.rpm
 yum update --assumeyes
 yum install --assumeyes puppet ruby-devel rubygems gcc zlib-devel libxml2-devel patch gnupg2
 
-gem install pupistry --no-ri --no-rdoc
+# Pinned to old (and possibly insecure?) versions due to old version of Ruby being shipped
+gem install nokogiri --version 1.6.8.1
+gem install pupistry --no-ri --no-rdoc --version 1.5.0
+
 mkdir -p /etc/pupistry
 mkdir -p <%= puppetcode %>
 cat > /etc/pupistry/settings.yaml << "EOF"

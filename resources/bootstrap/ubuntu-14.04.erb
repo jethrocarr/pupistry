@@ -15,7 +15,11 @@ apt-get -y upgrade
 
 apt-get install -y puppet ruby ruby-dev zlib1g-dev libxml2-dev gcc make patch gnupg2
 
-gem install pupistry --no-ri --no-rdoc
+# Pinned to old (and possibly insecure?) versions due to old version of Ruby being shipped
+gem install nokogiri --version 1.6.8.1
+gem install pupistry --no-ri --no-rdoc --version 1.5.0
+
+
 mkdir -p /etc/pupistry
 mkdir -p <%= puppetcode %>
 cat > /etc/pupistry/settings.yaml << "EOF"
