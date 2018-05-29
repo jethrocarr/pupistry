@@ -108,6 +108,10 @@ module Pupistry
             nodes = Dir.glob('hieracrypt/nodes/*')
 
             if nodes
+              # Track if we end up with facts referenced in hiera.yaml that are
+              # not in the Hieracrypt data for nodes.
+              missing_facts = 0
+
               for node in nodes
                 node = File.basename(node)
 
@@ -176,9 +180,10 @@ module Pupistry
                       # Match syntax of %{::some_kinda_fact}
                       line.scan(/%{::([[:word:]]*)}/) do |match|
                         # Replace fact variable with actual value
-                        unless defined? puppet_facts[match[0]]
-                          $logger.warn "hiera.yaml references fact #{match[0]} but this fact doesn't exist in #{node}'s hieracrypt/node/#{node} JSON."
-                          $logger.warn "Possibly out of date data, re-run `pupistry hieracrypt --generate` on the node"
+                        unless puppet_facts.key?(match[0])
+                          missing_facts += 1
+                          $logger.debug "hiera.yaml references fact #{match[0]} but this fact doesn't exist in #{node}'s hieracrypt/node/#{node} JSON."
+                          $logger.debug "Possibly out of date data, re-run `pupistry hieracrypt --generate` on the node"
                         else
                           line = line.sub("%{::#{match[0]}}", puppet_facts[match[0]])
                         end
@@ -240,6 +245,11 @@ module Pupistry
                 # Cleanup Unencrypted
                 FileUtils.rm_r "hieracrypt.#{node}.tar.gz"
                 FileUtils.rm_r "hieracrypt.#{node}"
+              end
+
+              # Alert if we found missing facts
+              if missing_facts > 0
+                $logger.warn "Not all the values in hiera.yaml exist in the Hieracrypt data for #{missing_facts} node(s). Run with --verbose for more info"
               end
             else
               $logger.warn "No nodes could be found for branch #{env}, no encryption can take place there."
