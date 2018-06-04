@@ -11,7 +11,10 @@
 t=300; c=0; r=0; until ping -c 1 www.google.com >/dev/null 2>&1 || ((++c >= t)); do r=$?; echo "Waiting for network... ($r)"; done
 
 yum update --assumeyes
-yum install --assumeyes puppet ruby-devel rubygems gcc zlib-devel libxml2-devel patch gnupg redhat-rpm-config
+yum install --assumeyes puppet ruby-devel rubygems gcc zlib-devel libxml2-devel libxslt-devel patch gnupg redhat-rpm-config make
+
+# Nokogiri system package seems... iffy
+gem install nokogiri -- --use-system-libraries
 
 gem install pupistry --no-ri --no-rdoc
 mkdir -p /etc/pupistry
